@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { z } from 'zod';
-import { RoomManager } from '../rooms/room-manager.js';
+import { RoomManager } from '../rooms/room-manager';
 import {
   getPublicGameState,
   getPlayerPrivateState,
@@ -12,7 +12,7 @@ import {
   calculateStandings,
   CardColor,
 } from '@stack-uno/game-engine';
-import { Room } from '../rooms/types.js';
+import { Room } from '../rooms/types';
 
 // Input Schemas
 const CreateRoomSchema = z.object({

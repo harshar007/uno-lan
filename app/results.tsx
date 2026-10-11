@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
-import { GoldenButton } from '../src/components/GoldenButton.js';
-import { SecondaryButton } from '../src/components/SecondaryButton.js';
-import { DangerButton } from '../src/components/DangerButton.js';
-import { useGameStore } from '../src/store/game-store.js';
-import { colors } from '../src/theme/colors.js';
-import { haptic } from '../src/services/haptics.js';
+import { StackUnoLogo } from '../src/components/StackUnoLogo';
+import { GoldenButton } from '../src/components/GoldenButton';
+import { SecondaryButton } from '../src/components/SecondaryButton';
+import { DangerButton } from '../src/components/DangerButton';
+import { useGameStore } from '../src/store/game-store';
+import { colors } from '../src/theme/colors';
+import { haptic } from '../src/services/haptics';
 
 export default function ResultsScreen() {
   const router = useRouter();

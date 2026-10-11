@@ -3,13 +3,13 @@ import { View, Text, StyleSheet, TextInput, ScrollView, Alert, Switch } from 're
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Network from 'expo-network';
-import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
-import { GoldenButton } from '../src/components/GoldenButton.js';
-import { SecondaryButton } from '../src/components/SecondaryButton.js';
-import { ConnectionBadge } from '../src/components/ConnectionBadge.js';
-import { useGameStore } from '../src/store/game-store.js';
-import { colors } from '../src/theme/colors.js';
-import { haptic } from '../src/services/haptics.js';
+import { StackUnoLogo } from '../src/components/StackUnoLogo';
+import { GoldenButton } from '../src/components/GoldenButton';
+import { SecondaryButton } from '../src/components/SecondaryButton';
+import { ConnectionBadge } from '../src/components/ConnectionBadge';
+import { useGameStore } from '../src/store/game-store';
+import { colors } from '../src/theme/colors';
+import { haptic } from '../src/services/haptics';
 
 export default function SettingsScreen() {
   const router = useRouter();

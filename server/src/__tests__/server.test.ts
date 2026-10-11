@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { io as ClientSocket, Socket as ClientSocketType } from 'socket.io-client';
-import { createServerApp } from '../index.js';
+import { createServerApp } from '../index';
 import http from 'http';
 
 describe('STACK UNO Multiplayer Server Integration', () => {

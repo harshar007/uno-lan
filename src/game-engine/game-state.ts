@@ -8,12 +8,12 @@ import {
   PlayerPublicInfo,
   PublicGameState,
   PlayerPrivateState,
-} from './types.js';
-import { createStandardDeck, shuffleDeck } from './deck.js';
-import { createSeededRandom, RandomGenerator } from './shuffle.js';
-import { getDefaultRules } from './rules.js';
-import { isCardPlayable, isWildCard } from './cards.js';
-import { calculateNextPlayerIndex, reverseDirection } from './turn-manager.js';
+} from './types';
+import { createStandardDeck, shuffleDeck } from './deck';
+import { createSeededRandom, RandomGenerator } from './shuffle';
+import { getDefaultRules } from './rules';
+import { isCardPlayable, isWildCard } from './cards';
+import { calculateNextPlayerIndex, reverseDirection } from './turn-manager';
 
 export interface CreateGameOptions {
   id?: string;

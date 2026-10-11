@@ -8,9 +8,9 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { colors } from '../theme/colors.js';
-import { SPRING_CONFIG } from '../theme/animation.js';
-import { haptic } from '../services/haptics.js';
+import { colors } from '../theme/colors';
+import { SPRING_CONFIG } from '../theme/animation';
+import { haptic } from '../services/haptics';
 
 interface Props {
   onPress: () => void;

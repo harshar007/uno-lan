@@ -7,8 +7,8 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { PlayerAvatar } from './PlayerAvatar.js';
-import { colors } from '../theme/colors.js';
+import { PlayerAvatar } from './PlayerAvatar';
+import { colors } from '../theme/colors';
 
 interface Props {
   name: string;

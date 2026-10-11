@@ -1,4 +1,4 @@
-import { GameMode, GameRules } from './types.js';
+import { GameMode, GameRules } from './types';
 
 export function getDefaultRules(mode: GameMode): GameRules {
   if (mode === 'reverse') {

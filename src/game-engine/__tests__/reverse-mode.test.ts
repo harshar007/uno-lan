@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createGame } from '../game-state.js';
-import { playCard } from '../actions.js';
-import { Card } from '../types.js';
+import { createGame } from '../game-state';
+import { playCard } from '../actions';
+import { Card } from '../types';
 
 describe('UNO Reverse Mode Specific Tests', () => {
   const players = [

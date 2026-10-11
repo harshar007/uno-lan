@@ -8,8 +8,8 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { colors } from '../theme/colors.js';
-import { SPRING_CONFIG } from '../theme/animation.js';
+import { colors } from '../theme/colors';
+import { SPRING_CONFIG } from '../theme/animation';
 
 interface Props {
   onFinish: () => void;

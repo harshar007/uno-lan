@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createStandardDeck, shuffleDeck, recycleDiscardPile } from '../deck.js';
-import { createSeededRandom } from '../shuffle.js';
-import { CardColor } from '../types.js';
+import { createStandardDeck, shuffleDeck, recycleDiscardPile } from '../deck';
+import { createSeededRandom } from '../shuffle';
+import { CardColor } from '../types';
 
 describe('Deck Engine Tests', () => {
   it('creates exact 108 cards matching official UNO specifications', () => {

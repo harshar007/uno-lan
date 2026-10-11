@@ -10,14 +10,14 @@ import Animated, {
   withRepeat,
   Easing,
 } from 'react-native-reanimated';
-import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
-import { GoldenButton } from '../src/components/GoldenButton.js';
-import { SecondaryButton } from '../src/components/SecondaryButton.js';
-import { ConnectionBadge } from '../src/components/ConnectionBadge.js';
-import { GameModeCard } from '../src/components/GameModeCard.js';
-import { CinematicSplash } from '../src/components/SplashScreen.js';
-import { useGameStore } from '../src/store/game-store.js';
-import { colors } from '../src/theme/colors.js';
+import { StackUnoLogo } from '../src/components/StackUnoLogo';
+import { GoldenButton } from '../src/components/GoldenButton';
+import { SecondaryButton } from '../src/components/SecondaryButton';
+import { ConnectionBadge } from '../src/components/ConnectionBadge';
+import { GameModeCard } from '../src/components/GameModeCard';
+import { CinematicSplash } from '../src/components/SplashScreen';
+import { useGameStore } from '../src/store/game-store';
+import { colors } from '../src/theme/colors';
 
 export default function HomeScreen() {
   const router = useRouter();

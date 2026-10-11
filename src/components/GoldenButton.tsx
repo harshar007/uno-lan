@@ -13,9 +13,9 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../theme/colors.js';
-import { SPRING_CONFIG } from '../theme/animation.js';
-import { haptic } from '../services/haptics.js';
+import { colors } from '../theme/colors';
+import { SPRING_CONFIG } from '../theme/animation';
+import { haptic } from '../services/haptics';
 
 interface Props {
   title: string;

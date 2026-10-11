@@ -1,4 +1,4 @@
-import { GameState, TurnDirection } from './types.js';
+import { GameState, TurnDirection } from './types';
 
 /**
  * Calculates the next player's seat index given the current index, total players, direction, and step count.

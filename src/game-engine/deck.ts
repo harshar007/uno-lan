@@ -1,5 +1,5 @@
-import { Card, CardColor } from './types.js';
-import { RandomGenerator, shuffleArray } from './shuffle.js';
+import { Card, CardColor } from './types';
+import { RandomGenerator, shuffleArray } from './shuffle';
 
 const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow'];
 

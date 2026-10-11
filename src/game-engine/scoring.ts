@@ -1,5 +1,5 @@
-import { GameState } from './types.js';
-import { getCardPoints } from './cards.js';
+import { GameState } from './types';
+import { getCardPoints } from './cards';
 
 export interface PlayerStanding {
   playerId: string;

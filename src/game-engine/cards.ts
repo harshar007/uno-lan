@@ -1,4 +1,4 @@
-import { Card, CardColor } from './types.js';
+import { Card, CardColor } from './types';
 
 export function isWildCard(card: Card): boolean {
   return card.type === 'wild' || card.type === 'wild_draw_four';

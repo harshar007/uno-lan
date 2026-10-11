@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { GameMode } from '@stack-uno/game-engine';
-import { COLORS } from '../theme/colors.js';
+import { COLORS } from '../theme/colors';
 
 interface Props {
   mode: GameMode;

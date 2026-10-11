@@ -2,10 +2,10 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { SERVER_CONFIG } from './config/index.js';
-import { RoomManager } from './rooms/room-manager.js';
-import { registerSocketHandlers } from './sockets/handlers.js';
-import { getHostNetworkInfo } from './services/network-info.js';
+import { SERVER_CONFIG } from './config/index';
+import { RoomManager } from './rooms/room-manager';
+import { registerSocketHandlers } from './sockets/handlers';
+import { getHostNetworkInfo } from './services/network-info';
 
 export function createServerApp() {
   const app = express();

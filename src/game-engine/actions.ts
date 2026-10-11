@@ -1,8 +1,8 @@
-import { ActionResult, Card, CardColor, GameState } from './types.js';
-import { isCardPlayable, isWildCard } from './cards.js';
-import { calculateNextPlayerIndex, reverseDirection } from './turn-manager.js';
-import { recycleDiscardPile } from './deck.js';
-import { RandomGenerator } from './shuffle.js';
+import { ActionResult, Card, CardColor, GameState } from './types';
+import { isCardPlayable, isWildCard } from './cards';
+import { calculateNextPlayerIndex, reverseDirection } from './turn-manager';
+import { recycleDiscardPile } from './deck';
+import { RandomGenerator } from './shuffle';
 
 /**
  * Ensures cards are available in the draw pile, recycling the discard pile if needed.

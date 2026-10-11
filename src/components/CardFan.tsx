@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Card } from '@stack-uno/game-engine';
-import { GameCard } from './GameCard.js';
+import { GameCard } from './GameCard';
 
 interface Props {
   hand: Card[];

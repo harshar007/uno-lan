@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { createGame, getPublicGameState, getPlayerPrivateState } from '../game-state.js';
-import { playCard } from '../actions.js';
-import { calculateNextPlayerIndex } from '../turn-manager.js';
-import { Card } from '../types.js';
+import { createGame, getPublicGameState, getPlayerPrivateState } from '../game-state';
+import { playCard } from '../actions';
+import { calculateNextPlayerIndex } from '../turn-manager';
+import { Card } from '../types';
 
 describe('Turn Management, Seating, and Privacy Isolation', () => {
   it('supports 10 players and cycles turns clockwise and counter-clockwise', () => {

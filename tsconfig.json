@@ -3,7 +3,10 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
@@ -12,8 +15,12 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@stack-uno/game-engine": ["./src/game-engine/index.ts"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@stack-uno/game-engine": [
+        "./src/game-engine/index.ts"
+      ]
     }
   },
   "include": [
@@ -21,5 +28,6 @@
     "src/**/*",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

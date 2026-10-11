@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { Room, RoomPlayer, RoomPublicState, RoomSettings } from './types.js';
+import { Room, RoomPlayer, RoomPublicState, RoomSettings } from './types';
 import { createGame, GameMode, GameState } from '@stack-uno/game-engine';
-import { SERVER_CONFIG } from '../config/index.js';
+import { SERVER_CONFIG } from '../config/index';
 
 export class RoomManager {
   private rooms: Map<string, Room> = new Map();

@@ -7,8 +7,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { TurnDirection, GameMode } from '@stack-uno/game-engine';
-import { colors } from '../theme/colors.js';
-import { ANIMATION_TIMING } from '../theme/animation.js';
+import { colors } from '../theme/colors';
+import { ANIMATION_TIMING } from '../theme/animation';
 
 interface Props {
   direction: TurnDirection;

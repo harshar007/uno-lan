@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createGame, getLegalMoves } from '../game-state.js';
-import { playCard, drawCard, declareUno, calloutUno } from '../actions.js';
-import { Card } from '../types.js';
+import { createGame, getLegalMoves } from '../game-state';
+import { playCard, drawCard, declareUno, calloutUno } from '../actions';
+import { Card } from '../types';
 
 describe('Game Rules and Actions Tests', () => {
   const players = [

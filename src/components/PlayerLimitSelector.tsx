@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { COLORS } from '../theme/colors.js';
+import { COLORS } from '../theme/colors';
 
 interface Props {
   selectedLimit: number;

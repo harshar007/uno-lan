@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card, CardColor } from '@stack-uno/game-engine';
-import { GameCard } from './GameCard.js';
-import { COLORS } from '../theme/colors.js';
+import { GameCard } from './GameCard';
+import { COLORS } from '../theme/colors';
 
 interface Props {
   topCard: Card;

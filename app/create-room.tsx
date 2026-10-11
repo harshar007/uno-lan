@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
-import { GoldenButton } from '../src/components/GoldenButton.js';
-import { SecondaryButton } from '../src/components/SecondaryButton.js';
-import { GameModeCard } from '../src/components/GameModeCard.js';
-import { PlayerLimitSelector } from '../src/components/PlayerLimitSelector.js';
-import { ErrorMessage } from '../src/components/ErrorMessage.js';
-import { useGameStore } from '../src/store/game-store.js';
-import { COLORS } from '../src/theme/colors.js';
+import { StackUnoLogo } from '../src/components/StackUnoLogo';
+import { GoldenButton } from '../src/components/GoldenButton';
+import { SecondaryButton } from '../src/components/SecondaryButton';
+import { GameModeCard } from '../src/components/GameModeCard';
+import { PlayerLimitSelector } from '../src/components/PlayerLimitSelector';
+import { ErrorMessage } from '../src/components/ErrorMessage';
+import { useGameStore } from '../src/store/game-store';
+import { COLORS } from '../src/theme/colors';
 
 export default function CreateRoomScreen() {
   const router = useRouter();

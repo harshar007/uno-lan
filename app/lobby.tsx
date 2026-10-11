@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
-import { GoldenButton } from '../src/components/GoldenButton.js';
-import { DangerButton } from '../src/components/DangerButton.js';
-import { RoomCode } from '../src/components/RoomCode.js';
-import { PlayerAvatar } from '../src/components/PlayerAvatar.js';
-import { ErrorMessage } from '../src/components/ErrorMessage.js';
-import { useGameStore } from '../src/store/game-store.js';
-import { colors } from '../src/theme/colors.js';
+import { StackUnoLogo } from '../src/components/StackUnoLogo';
+import { GoldenButton } from '../src/components/GoldenButton';
+import { DangerButton } from '../src/components/DangerButton';
+import { RoomCode } from '../src/components/RoomCode';
+import { PlayerAvatar } from '../src/components/PlayerAvatar';
+import { ErrorMessage } from '../src/components/ErrorMessage';
+import { useGameStore } from '../src/store/game-store';
+import { colors } from '../src/theme/colors';
 
 export default function LobbyScreen() {
   const router = useRouter();

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { colors } from '../theme/colors.js';
-import { haptic } from '../services/haptics.js';
+import { colors } from '../theme/colors';
+import { haptic } from '../services/haptics';
 
 interface Props {
   code: string;

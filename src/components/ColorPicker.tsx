@@ -7,8 +7,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { CardColor } from '@stack-uno/game-engine';
-import { colors } from '../theme/colors.js';
-import { SPRING_CONFIG, ANIMATION_TIMING } from '../theme/animation.js';
+import { colors } from '../theme/colors';
+import { SPRING_CONFIG, ANIMATION_TIMING } from '../theme/animation';
 
 interface Props {
   visible: boolean;
