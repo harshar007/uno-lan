@@ -1,0 +1,19 @@
+{
+  "name": "@stack-uno/game-engine",
+  "version": "1.0.0",
+  "description": "Pure TypeScript server-authoritative card game engine for STACK UNO",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  }
+}

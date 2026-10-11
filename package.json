@@ -1,0 +1,20 @@
+{
+  "name": "stack-uno",
+  "version": "1.0.0",
+  "private": true,
+  "description": "STACK UNO — Real-time LAN multiplayer card game",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:server": "npm run dev --workspace=@stack-uno/server",
+    "dev:mobile": "npm run start --workspace=@stack-uno/mobile",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
