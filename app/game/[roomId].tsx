@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { DiscardPile } from '../../src/components/DiscardPile';
 import { DrawPile } from '../../src/components/DrawPile';
 import { CardFan } from '../../src/components/CardFan';
@@ -163,8 +164,17 @@ export default function GameScreen() {
           </ScrollView>
         </View>
 
-        {/* Central Game Table with Metallic Outline and Subtle Gradient */}
-        <View style={styles.gameTable}>
+        {/* Central Casino Velvet Game Table */}
+        <LinearGradient
+          colors={['#0F3A2B', '#09251B', '#051711']}
+          start={{ x: 0.1, y: 0.1 }}
+          end={{ x: 0.9, y: 0.9 }}
+          style={styles.gameTable}
+        >
+          {/* Subtle Felt Center Emblem */}
+          <View style={styles.tableEmblem}>
+            <Text style={styles.tableEmblemText}>STACK UNO • ROYAL FELT</Text>
+          </View>
           <View style={styles.tableInner}>
             <DrawPile
               count={gameState.drawPileCount}
@@ -177,7 +187,7 @@ export default function GameScreen() {
               discardCount={gameState.discardPileCount}
             />
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Action Controls & Hand Info */}
         <View style={styles.actionRow}>
@@ -247,22 +257,35 @@ const styles = StyleSheet.create({
   },
   gameTable: {
     marginHorizontal: 16,
-    paddingVertical: 18,
-    backgroundColor: '#0F0F0F',
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: '#262626',
+    paddingVertical: 22,
+    borderRadius: 36,
+    borderWidth: 2.5,
+    borderColor: '#D4AF37',
     shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  tableEmblem: {
+    position: 'absolute',
+    top: 6,
+    alignSelf: 'center',
+    opacity: 0.35,
+  },
+  tableEmblemText: {
+    color: '#D4AF37',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   tableInner: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
+    gap: 48,
   },
   actionRow: {
     flexDirection: 'row',

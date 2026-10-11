@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '@stack-uno/game-engine';
 import { colors } from '../theme/colors';
 import { SPRING_CONFIG } from '../theme/animation';
@@ -18,7 +19,8 @@ import {
 } from './CardSvgIcons';
 
 interface Props {
-  card: Card;
+  card?: Card;
+  faceDown?: boolean;
   size?: 'small' | 'medium' | 'large';
   isSelected?: boolean;
   isPlayable?: boolean;
@@ -26,16 +28,17 @@ interface Props {
   disabled?: boolean;
 }
 
-const CARD_COLORS = {
-  red: '#EA2027',
-  blue: '#0652DD',
-  green: '#009432',
-  yellow: '#FFC312',
-  wild: '#121212',
+const CARD_PALETTE = {
+  red: { main: '#E71D36', dark: '#B7091E', highlight: '#FF4D63' },
+  blue: { main: '#0066FF', dark: '#0047B3', highlight: '#3385FF' },
+  green: { main: '#00B894', dark: '#00876C', highlight: '#2CE6BE' },
+  yellow: { main: '#FFB800', dark: '#D99B00', highlight: '#FFCE33' },
+  wild: { main: '#181818', dark: '#080808', highlight: '#2E2E2E' },
 };
 
 export const GameCard: React.FC<Props> = ({
-  card,
+  card = { id: 'unknown', type: 'number', value: 0 },
+  faceDown = false,
   size = 'medium',
   isSelected = false,
   isPlayable = false,
@@ -47,8 +50,8 @@ export const GameCard: React.FC<Props> = ({
 
   useEffect(() => {
     if (isSelected) {
-      translateY.value = withSpring(-18, SPRING_CONFIG.cardLift);
-      scale.value = withSpring(1.06, SPRING_CONFIG.cardLift);
+      translateY.value = withSpring(-20, SPRING_CONFIG.cardLift);
+      scale.value = withSpring(1.08, SPRING_CONFIG.cardLift);
     } else {
       translateY.value = withSpring(0, SPRING_CONFIG.cardLift);
       scale.value = withSpring(1, SPRING_CONFIG.cardLift);
@@ -59,24 +62,24 @@ export const GameCard: React.FC<Props> = ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
   }));
 
-  const cardColorHex = card.color ? CARD_COLORS[card.color] : CARD_COLORS.wild;
+  const cardColorKey = (card.color || 'wild') as keyof typeof CARD_PALETTE;
+  const palette = CARD_PALETTE[cardColorKey] || CARD_PALETTE.wild;
   const isYellow = card.color === 'yellow';
   const isWild = card.type === 'wild' || card.type === 'wild_draw_four';
 
-  // Card dimensions (aspect ratio ~ 1 : 1.45)
+  // Authentic Playing Card Dimensions (Standard 1 : 1.48 aspect ratio)
   const isSmall = size === 'small';
   const isLarge = size === 'large';
 
-  const width = isSmall ? 48 : isLarge ? 80 : 68;
-  const height = isSmall ? 70 : isLarge ? 118 : 100;
-  const borderWidth = isSmall ? 2.5 : isLarge ? 4 : 3.5;
+  const width = isSmall ? 48 : isLarge ? 82 : 70;
+  const height = isSmall ? 70 : isLarge ? 122 : 104;
   const borderRadius = isSmall ? 8 : isLarge ? 14 : 12;
 
   // Typography sizing
-  const numberFontSize = isSmall ? 20 : isLarge ? 44 : 34;
-  const cornerFontSize = isSmall ? 10 : isLarge ? 14 : 12;
-  const actionIconSize = isSmall ? 20 : isLarge ? 44 : 34;
-  const cornerIconSize = isSmall ? 9 : isLarge ? 13 : 11;
+  const numberFontSize = isSmall ? 22 : isLarge ? 46 : 36;
+  const cornerFontSize = isSmall ? 10 : isLarge ? 15 : 12;
+  const actionIconSize = isSmall ? 22 : isLarge ? 46 : 36;
+  const cornerIconSize = isSmall ? 10 : isLarge ? 14 : 12;
 
   // Format number text (underline 6 and 9)
   const renderNumberText = (val?: number) => {
@@ -168,7 +171,7 @@ export const GameCard: React.FC<Props> = ({
             styles.centerNumber,
             {
               fontSize: numberFontSize,
-              color: cardColorHex,
+              color: palette.main,
             },
           ]}
         >
@@ -178,18 +181,18 @@ export const GameCard: React.FC<Props> = ({
     }
 
     if (card.type === 'skip') {
-      return <SkipIcon color={cardColorHex} size={actionIconSize} />;
+      return <SkipIcon color={palette.main} size={actionIconSize} />;
     }
 
     if (card.type === 'reverse') {
-      return <ReverseIcon color={cardColorHex} size={actionIconSize} />;
+      return <ReverseIcon color={palette.main} size={actionIconSize} />;
     }
 
     if (card.type === 'draw_two') {
       return (
         <View style={styles.centerActionCol}>
-          <DrawTwoIcon color={cardColorHex} size={actionIconSize * 0.85} />
-          <Text style={[styles.actionBadgeText, { color: cardColorHex }]}>+2</Text>
+          <DrawTwoIcon color={palette.main} size={actionIconSize * 0.85} />
+          <Text style={[styles.actionBadgeText, { color: palette.main }]}>+2</Text>
         </View>
       );
     }
@@ -215,6 +218,42 @@ export const GameCard: React.FC<Props> = ({
     return null;
   };
 
+  // -------------------------------------------------------------
+  // REAL FACE-DOWN CARD BACK (Deep black with iconic tilted red oval)
+  // -------------------------------------------------------------
+  if (faceDown) {
+    return (
+      <Animated.View style={[animatedStyle, { zIndex: isSelected ? 50 : 1 }]}>
+        <View
+          style={[
+            styles.cardOuterBezel,
+            {
+              width,
+              height,
+              borderRadius,
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={['#181818', '#0A0A0A']}
+            style={[styles.cardInnerField, { borderRadius: borderRadius - 2 }]}
+          >
+            {/* Inner Gold Border */}
+            <View style={styles.cardBackGoldRim}>
+              {/* Tilted Signature Red Oval */}
+              <View style={styles.cardBackRedOval}>
+                <Text style={styles.cardBackUnoText}>UNO</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </View>
+      </Animated.View>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // REAL FACE-UP CARD
+  // -------------------------------------------------------------
   return (
     <Animated.View style={[animatedStyle, { zIndex: isSelected ? 50 : 1 }]}>
       <Pressable
@@ -224,28 +263,26 @@ export const GameCard: React.FC<Props> = ({
           onPress?.();
         }}
         style={[
-          styles.cardOuter,
+          styles.cardOuterBezel,
           {
             width,
             height,
             borderRadius,
-            borderWidth,
-            borderColor: '#FFFFFF',
           },
           isSelected && styles.selectedGlow,
           isPlayable && !isSelected && styles.playableGlow,
           disabled && !isPlayable && styles.disabledCard,
         ]}
       >
-        {/* Inner Colored Field */}
-        <View
+        {/* Inner Colored Field with Satin Light Gradient */}
+        <LinearGradient
+          colors={[palette.highlight, palette.main, palette.dark]}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
           style={[
-            styles.cardInner,
-            {
-              backgroundColor: cardColorHex,
-              borderRadius: borderRadius - 2,
-            },
-            isWild && styles.wildCardInner,
+            styles.cardInnerField,
+            { borderRadius: borderRadius - 2 },
+            isWild && styles.wildCardBorder,
           ]}
         >
           {/* Top-Left Corner */}
@@ -254,7 +291,7 @@ export const GameCard: React.FC<Props> = ({
           {/* Tilted Signature White Center Oval */}
           <View
             style={[
-              styles.centerOval,
+              styles.centerWhiteOval,
               isWild && styles.wildCenterOval,
             ]}
           >
@@ -263,66 +300,64 @@ export const GameCard: React.FC<Props> = ({
 
           {/* Bottom-Right Corner (180° rotated) */}
           <View style={styles.bottomRightCorner}>{renderCornerContent()}</View>
-        </View>
+        </LinearGradient>
       </Pressable>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  cardOuter: {
+  cardOuterBezel: {
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 3.5,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.45,
     shadowRadius: 5,
     elevation: 6,
-    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#ECECEC',
   },
-  cardInner: {
-    width: '100%',
-    height: '100%',
+  cardInnerField: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     position: 'relative',
   },
-  wildCardInner: {
-    borderWidth: 1,
+  wildCardBorder: {
+    borderWidth: 1.5,
     borderColor: '#D4AF37',
   },
   selectedGlow: {
     borderColor: colors.gold,
-    borderWidth: 4,
     shadowColor: colors.gold,
-    shadowOpacity: 0.95,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOpacity: 1,
+    shadowRadius: 14,
+    elevation: 14,
+    backgroundColor: '#FFEFA6',
   },
   playableGlow: {
-    borderColor: '#FFF3B0',
-    borderWidth: 3.5,
+    borderColor: '#FFF5B8',
     shadowColor: colors.gold,
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.7,
     shadowRadius: 8,
   },
   disabledCard: {
-    opacity: 0.65,
+    opacity: 0.68,
   },
   topLeftCorner: {
     position: 'absolute',
-    top: 4,
-    left: 5,
+    top: 3,
+    left: 4,
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bottomRightCorner: {
     position: 'absolute',
-    bottom: 4,
-    right: 5,
+    bottom: 3,
+    right: 4,
     zIndex: 10,
     transform: [{ rotate: '180deg' }],
     alignItems: 'center',
@@ -332,28 +367,28 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontStyle: 'italic',
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowColor: 'rgba(0,0,0,0.65)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   darkCornerText: {
-    color: '#111111',
+    color: '#151515',
     textShadowColor: 'rgba(255,255,255,0.4)',
   },
-  centerOval: {
+  centerWhiteOval: {
     width: '84%',
     height: '66%',
-    borderRadius: 60,
+    borderRadius: 70,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ rotate: '-26deg' }],
+    transform: [{ rotate: '-28deg' }],
     shadowColor: '#000000',
     shadowOffset: { width: 1, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.35,
     shadowRadius: 3,
     borderWidth: 1.5,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   wildCenterOval: {
     backgroundColor: '#0F0F0F',
@@ -363,7 +398,7 @@ const styles = StyleSheet.create({
   centerNumber: {
     fontWeight: '900',
     fontStyle: 'italic',
-    transform: [{ rotate: '26deg' }], // counter-rotate so number stands upright
+    transform: [{ rotate: '28deg' }], // counter-rotate upright
     textShadowColor: 'rgba(0,0,0,0.18)',
     textShadowOffset: { width: 1, height: 2 },
     textShadowRadius: 2,
@@ -372,7 +407,7 @@ const styles = StyleSheet.create({
   centerActionCol: {
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ rotate: '26deg' }], // counter-rotate
+    transform: [{ rotate: '28deg' }], // counter-rotate upright
   },
   actionBadgeText: {
     fontSize: 11,
@@ -393,5 +428,39 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontStyle: 'italic',
     marginTop: -2,
+  },
+  cardBackGoldRim: {
+    width: '92%',
+    height: '92%',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#D4AF37',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardBackRedOval: {
+    width: '82%',
+    height: '62%',
+    backgroundColor: '#E71D36',
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#FFD700',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '-28deg' }],
+    shadowColor: '#000000',
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+  },
+  cardBackUnoText: {
+    color: '#FFD700',
+    fontWeight: '900',
+    fontStyle: 'italic',
+    fontSize: 17,
+    letterSpacing: 1.5,
+    textShadowColor: 'rgba(0,0,0,0.7)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
   },
 });

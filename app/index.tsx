@@ -18,6 +18,7 @@ import { CinematicSplash } from '../src/components/SplashScreen';
 import { useGameStore } from '../src/store/game-store';
 import { colors } from '../src/theme/colors';
 import { haptic } from '../src/services/haptics';
+import { GameCard } from '../src/components/GameCard';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -77,17 +78,21 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Decorative background floating cards */}
-      <Animated.View style={[styles.bgCard, styles.bgCardLeft, floatCard1Style]}>
-        <View style={[styles.bgCardInner, { backgroundColor: colors.cardRed }]}>
-          <Text style={styles.bgCardText}>7</Text>
-        </View>
+      {/* Decorative background realistic floating cards */}
+      <Animated.View pointerEvents="none" style={[styles.bgCard, styles.bgCardLeft, floatCard1Style]}>
+        <GameCard
+          card={{ id: 'bg1', color: 'red', type: 'number', value: 7 }}
+          size="medium"
+          disabled
+        />
       </Animated.View>
 
-      <Animated.View style={[styles.bgCard, styles.bgCardRight, floatCard2Style]}>
-        <View style={[styles.bgCardInner, { backgroundColor: colors.cardYellow }]}>
-          <Text style={[styles.bgCardText, { color: '#080808' }]}>⇄</Text>
-        </View>
+      <Animated.View pointerEvents="none" style={[styles.bgCard, styles.bgCardRight, floatCard2Style]}>
+        <GameCard
+          card={{ id: 'bg2', color: 'yellow', type: 'reverse' }}
+          size="medium"
+          disabled
+        />
       </Animated.View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -205,25 +210,11 @@ const styles = StyleSheet.create({
   },
   bgCardLeft: {
     top: 140,
-    left: -15,
+    left: -10,
   },
   bgCardRight: {
     top: 220,
-    right: -15,
-  },
-  bgCardInner: {
-    width: 80,
-    height: 120,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bgCardText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 36,
+    right: -10,
   },
   header: {
     marginTop: 10,

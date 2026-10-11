@@ -59,14 +59,22 @@ export const PlayerSeat: React.FC<Props> = ({
         isHost={isHost}
         isConnected={isConnected}
         hasDeclaredUno={hasDeclaredUno}
-        size={38}
+        size={36}
       />
       <View style={styles.info}>
         <Text numberOfLines={1} style={[styles.name, isCurrentTurn && styles.activeName]}>
           {name}
         </Text>
-        <View style={styles.cardCountPill}>
-          <Text style={styles.cardCountText}>{cardCount} 🂠</Text>
+
+        {/* Realistic Mini Face-Down Card Hand */}
+        <View style={styles.miniCardStack}>
+          <View style={[styles.miniCardBack, styles.miniCardBackUnder]} />
+          <View style={styles.miniCardBack}>
+            <View style={styles.miniCardRedOval} />
+          </View>
+          <View style={styles.cardCountBadge}>
+            <Text style={styles.cardCountText}>{cardCount}</Text>
+          </View>
         </View>
       </View>
 
@@ -93,27 +101,29 @@ export const PlayerSeat: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   seat: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: '#141414',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     borderWidth: 1.5,
-    borderColor: '#2A2A2A',
-    minWidth: 105,
+    borderColor: '#262626',
+    minWidth: 125,
     shadowColor: colors.gold,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
   },
   activeSeat: {
-    backgroundColor: '#1C180C',
+    backgroundColor: '#1E180A',
+    borderColor: colors.gold,
     elevation: 4,
   },
   info: {
     flexShrink: 1,
+    gap: 3,
   },
   name: {
     color: colors.textSecondary,
@@ -122,14 +132,49 @@ const styles = StyleSheet.create({
   },
   activeName: {
     color: colors.gold,
+    fontWeight: '800',
   },
-  cardCountPill: {
-    marginTop: 2,
+  miniCardStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    position: 'relative',
+  },
+  miniCardBack: {
+    width: 14,
+    height: 20,
+    backgroundColor: '#0F0F0F',
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  miniCardBackUnder: {
+    position: 'absolute',
+    left: -3,
+    transform: [{ rotate: '-12deg' }],
+    backgroundColor: '#1E1E1E',
+  },
+  miniCardRedOval: {
+    width: 8,
+    height: 12,
+    borderRadius: 4,
+    backgroundColor: '#E71D36',
+    transform: [{ rotate: '-25deg' }],
+  },
+  cardCountBadge: {
+    backgroundColor: '#262626',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: '#444444',
   },
   cardCountText: {
-    color: colors.goldMetallic,
+    color: colors.gold,
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   skippedBadge: {
     backgroundColor: colors.error,
@@ -144,14 +189,15 @@ const styles = StyleSheet.create({
   },
   calloutBtn: {
     backgroundColor: colors.error,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginLeft: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 2,
   },
   calloutText: {
     color: '#FFFFFF',
     fontWeight: '900',
     fontSize: 10,
+    letterSpacing: 0.5,
   },
 });
