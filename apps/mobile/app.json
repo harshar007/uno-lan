@@ -6,10 +6,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "stackuno",
-    "splash": {
-      "backgroundColor": "#080808",
-      "resizeMode": "contain"
-    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
