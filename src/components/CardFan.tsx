@@ -18,8 +18,9 @@ export const CardFan: React.FC<Props> = ({
   onSelectCard,
   disabled = false,
 }) => {
-  // Compute adaptive overlap based on hand size
-  const overlapMargin = hand.length > 10 ? -26 : hand.length > 6 ? -18 : -10;
+  // Adaptive overlap margin based on hand size
+  const overlapMargin =
+    hand.length > 12 ? -36 : hand.length > 8 ? -28 : hand.length > 5 ? -18 : -10;
 
   return (
     <View style={styles.container}>
@@ -32,10 +33,10 @@ export const CardFan: React.FC<Props> = ({
           const isSelected = selectedCardId === card.id;
           const isPlayable = legalCardIds.includes(card.id);
 
-          // Subtle fanning angle based on card position relative to center
+          // Subtle natural fanning angle
           const centerIndex = (hand.length - 1) / 2;
           const normalizedOffset = hand.length > 1 ? (index - centerIndex) / centerIndex : 0;
-          const rotateAngle = `${(normalizedOffset * 5).toFixed(1)}deg`;
+          const rotateAngle = `${(normalizedOffset * 4.5).toFixed(1)}deg`;
 
           return (
             <View
@@ -67,14 +68,15 @@ export const CardFan: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 165,
+    height: 180,
     width: '100%',
     justifyContent: 'center',
   },
   scrollContent: {
     paddingHorizontal: 24,
     alignItems: 'flex-end',
-    paddingBottom: 16,
+    paddingBottom: 24,
+    paddingTop: 10,
   },
   cardWrapper: {
     alignItems: 'center',

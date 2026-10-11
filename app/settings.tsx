@@ -59,7 +59,7 @@ export default function SettingsScreen() {
       await haptic.error();
       Alert.alert(
         'Connection Failed',
-        `Unable to reach server at ${inputUrl}. Make sure the host computer has run 'npm run dev:server' and your phone is on the same Wi-Fi network.`
+        `Unable to reach server at ${inputUrl}. Make sure the host computer has run 'npm run server' and your phone is on the same Wi-Fi network.`
       );
     } finally {
       setTesting(false);
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
             1. Connect host computer and mobile phones to the same Wi-Fi router.
           </Text>
           <Text style={styles.guideStep}>
-            2. On host computer, run: <Text style={styles.codeText}>npm run dev:server</Text>
+            2. On host computer, run: <Text style={styles.codeText}>npm run server</Text>
           </Text>
           <Text style={styles.guideStep}>
             3. The server terminal will print your local IP (e.g. <Text style={styles.codeText}>http://192.168.1.15:3000</Text>).

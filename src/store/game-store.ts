@@ -46,13 +46,13 @@ export function detectDefaultServerUrl(): string {
     if (hostUri && typeof hostUri === 'string') {
       const ip = hostUri.split(':')[0];
       if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
-        return `http://${ip}:3001`;
+        return `http://${ip}:3000`;
       }
     }
   } catch {
     // fallback
   }
-  return 'http://localhost:3001';
+  return 'http://localhost:3000';
 }
 
 interface GameStoreState {
@@ -122,8 +122,40 @@ interface GameStoreState {
 }
 
 let botTurnTimeout: NodeJS.Timeout | null = null;
-
 const BOT_NAMES = ['Aura (AI)', 'Midas (AI)', 'Cipher (AI)', 'Onyx (AI)', 'Sol (AI)'];
+
+/**
+ * Awaits socket connection state with a graceful timeout.
+ */
+function waitForSocketConnection(socket: Socket, timeoutMs = 5000): Promise<boolean> {
+  if (socket.connected) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve(false);
+    }, timeoutMs);
+
+    const onConnect = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    const onError = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    const cleanup = () => {
+      clearTimeout(timer);
+      socket.off('connect', onConnect);
+      socket.off('connect_error', onError);
+    };
+
+    socket.once('connect', onConnect);
+    socket.once('connect_error', onError);
+  });
+}
 
 export const useGameStore = create<GameStoreState>((set, get) => ({
   serverUrl: detectDefaultServerUrl(),
@@ -261,8 +293,8 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
     const newSocket = io(serverUrl, {
       transports: ['websocket', 'polling'],
-      timeout: 6000,
-      reconnectionAttempts: 3,
+      timeout: 8000,
+      reconnectionAttempts: 4,
     });
 
     newSocket.on('connect', () => {
@@ -322,11 +354,27 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   createRoom: async (playerName, maxPlayers, gameMode, password) => {
     set({ isLocalGame: false, localGameState: null });
     const socket = get().connectSocket();
+    const { serverUrl } = get();
+
+    const isConnected = await waitForSocketConnection(socket, 5000);
+    if (!isConnected && !socket.connected) {
+      set({
+        errorMessage: `Cannot reach LAN server at ${serverUrl}. Please ensure 'npm run server' is running on the computer and phone is on the same Wi-Fi.`,
+      });
+      return false;
+    }
+
     return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        set({ errorMessage: 'Server timed out while creating room. Please try again.' });
+        resolve(false);
+      }, 7000);
+
       socket.emit(
         'room:create',
         { playerName, maxPlayers, gameMode, password },
         (res: any) => {
+          clearTimeout(timeout);
           if (res?.success) {
             set({
               playerName,
@@ -348,11 +396,27 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   joinRoom: async (roomCode, playerName, password) => {
     set({ isLocalGame: false, localGameState: null });
     const socket = get().connectSocket();
+    const { serverUrl } = get();
+
+    const isConnected = await waitForSocketConnection(socket, 5000);
+    if (!isConnected && !socket.connected) {
+      set({
+        errorMessage: `Cannot reach LAN server at ${serverUrl}. Please verify host IP and make sure computer server is running.`,
+      });
+      return false;
+    }
+
     return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        set({ errorMessage: 'Server timed out while joining room. Please check the room code and IP.' });
+        resolve(false);
+      }, 7000);
+
       socket.emit(
         'room:join',
         { roomCode: roomCode.trim().toUpperCase(), playerName, password },
         (res: any) => {
+          clearTimeout(timeout);
           if (res?.success) {
             set({
               playerName,
@@ -669,7 +733,6 @@ function scheduleLocalBotTurn() {
 
     // 1. Bot makes tactical decision
     const decision = decideBotMove(localGameState, currentBotId);
-
     let currentState = localGameState;
 
     // Optional callout against human or other bot

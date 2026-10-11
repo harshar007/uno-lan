@@ -13,9 +13,18 @@ import { COLORS } from '../src/theme/colors';
 
 export default function CreateRoomScreen() {
   const router = useRouter();
-  const { createRoom, errorMessage, clearError, playerName, setPlayerName } = useGameStore();
+  const {
+    createRoom,
+    errorMessage,
+    clearError,
+    playerName,
+    setPlayerName,
+    serverUrl,
+    setServerUrl,
+  } = useGameStore();
 
   const [name, setName] = useState(playerName || 'Host Player');
+  const [hostAddress, setHostAddress] = useState(serverUrl);
   const [mode, setMode] = useState<'classic' | 'reverse'>('classic');
   const [maxPlayers, setMaxPlayers] = useState(10);
   const [password, setPassword] = useState('');
@@ -26,7 +35,11 @@ export default function CreateRoomScreen() {
     setLoading(true);
     clearError();
 
+    if (hostAddress.trim() && hostAddress.trim() !== serverUrl) {
+      setServerUrl(hostAddress.trim());
+    }
     setPlayerName(name.trim());
+
     const success = await createRoom(
       name.trim(),
       maxPlayers,
@@ -45,7 +58,7 @@ export default function CreateRoomScreen() {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <StackUnoLogo size="small" />
 
-        <Text style={styles.screenTitle}>CREATE GAME ROOM</Text>
+        <Text style={styles.screenTitle}>CREATE LAN ROOM</Text>
 
         <ErrorMessage message={errorMessage} onDismiss={clearError} />
 
@@ -60,6 +73,22 @@ export default function CreateRoomScreen() {
             placeholderTextColor={COLORS.textMuted}
             maxLength={20}
           />
+        </View>
+
+        {/* Server IP / LAN Address */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>MULTIPLAYER SERVER ADDRESS</Text>
+          <TextInput
+            style={styles.input}
+            value={hostAddress}
+            onChangeText={setHostAddress}
+            placeholder="http://192.168.1.x:3000"
+            placeholderTextColor={COLORS.textMuted}
+            autoCapitalize="none"
+          />
+          <Text style={styles.helperText}>
+            Host computer address. Run 'npm run server' in terminal.
+          </Text>
         </View>
 
         {/* Game Mode */}
@@ -130,7 +159,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   fieldGroup: {
     marginVertical: 8,
@@ -150,11 +179,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: COLORS.textPrimary,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
+  helperText: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    marginTop: 4,
+  },
   actions: {
-    marginTop: 24,
+    marginTop: 22,
     gap: 12,
   },
 });
