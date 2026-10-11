@@ -1,31 +1,37 @@
-export const COLORS = {
-  // Backgrounds
+export const colors = {
   background: '#080808',
-  backgroundElevated: '#101010',
-  surface: '#171717',
+  backgroundSecondary: '#111111',
+  backgroundElevated: '#111111',
+  surface: '#181818',
   surfaceElevated: '#222222',
 
-  // Gold tokens
-  primaryGold: '#FFD700',
-  metallicGold: '#D4AF37',
-  deepGold: '#9F7515',
-  softGold: '#F5DE9A',
+  gold: '#FFD700',
+  goldMetallic: '#D4AF37',
+  goldDeep: '#9F7515',
+  goldSoft: '#F5DE9A',
   brightYellow: '#FFEB3B',
 
-  // Typography
   textPrimary: '#FFFFFF',
   textSecondary: '#A3A3A3',
   textMuted: '#666666',
+  border: '#343434',
 
-  // Game card colors
-  cardRed: '#E53935',
-  cardBlue: '#1E88E5',
-  cardGreen: '#43A047',
-  cardYellow: '#FDD835',
-  cardWild: '#1E1E1E',
+  cardRed: '#ED1C24',
+  cardBlue: '#1677E8',
+  cardGreen: '#19A84A',
+  cardYellow: '#FFD928',
+  cardWild: '#151515',
 
-  // System states
   success: '#4ADE80',
   error: '#FF4545',
   warning: '#F59E0B',
+};
+
+// Alias COLORS to colors for convenience and compatibility
+export const COLORS = {
+  ...colors,
+  primaryGold: colors.gold,
+  metallicGold: colors.goldMetallic,
+  deepGold: colors.goldDeep,
+  softGold: colors.goldSoft,
 };

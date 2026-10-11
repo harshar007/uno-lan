@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
 import { GoldenButton } from '../src/components/GoldenButton.js';
 import { SecondaryButton } from '../src/components/SecondaryButton.js';
+import { DangerButton } from '../src/components/DangerButton.js';
 import { useGameStore } from '../src/store/game-store.js';
-import { COLORS } from '../src/theme/colors.js';
+import { colors } from '../src/theme/colors.js';
 
 export default function ResultsScreen() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function ResultsScreen() {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <StackUnoLogo size="small" />
 
-        {/* Victory Banner */}
+        {/* Victory Celebration Card */}
         <View style={styles.victoryCard}>
           <Text style={styles.trophy}>🏆</Text>
           <Text style={styles.victoryTitle}>
@@ -93,7 +94,7 @@ export default function ResultsScreen() {
               onPress={handleReturnToLobby}
             />
           )}
-          <SecondaryButton
+          <DangerButton
             title="EXIT TO MAIN MENU"
             onPress={handleExit}
           />
@@ -106,40 +107,40 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   container: {
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
   victoryCard: {
-    backgroundColor: '#1E1908',
-    borderRadius: 16,
+    backgroundColor: '#1C1608',
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: COLORS.primaryGold,
+    borderColor: colors.gold,
     padding: 24,
     alignItems: 'center',
     marginVertical: 16,
-    shadowColor: COLORS.primaryGold,
+    shadowColor: colors.gold,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowRadius: 12,
     elevation: 8,
   },
   trophy: {
-    fontSize: 54,
+    fontSize: 56,
     marginBottom: 8,
   },
   victoryTitle: {
     fontSize: 22,
     fontWeight: '900',
-    color: COLORS.primaryGold,
+    color: colors.gold,
     letterSpacing: 2,
     textAlign: 'center',
   },
   victorySubtitle: {
     fontSize: 13,
-    color: COLORS.softGold,
+    color: colors.goldSoft,
     marginTop: 6,
     textAlign: 'center',
   },
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionTitle: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 1.5,
@@ -159,16 +160,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: colors.border,
     gap: 12,
   },
   myRow: {
-    borderColor: COLORS.metallicGold,
-    backgroundColor: '#16140D',
+    borderColor: colors.goldMetallic,
+    backgroundColor: '#18140A',
   },
   rankBadge: {
     width: 32,
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rankText: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontWeight: '900',
     fontSize: 14,
   },
@@ -187,15 +188,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   playerName: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '700',
   },
   myText: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
   },
   pointsText: {
-    color: COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 12,
     marginTop: 2,
   },

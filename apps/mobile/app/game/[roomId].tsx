@@ -12,7 +12,7 @@ import { UnoButton } from '../../src/components/UnoButton.js';
 import { ColorPicker } from '../../src/components/ColorPicker.js';
 import { ErrorMessage } from '../../src/components/ErrorMessage.js';
 import { useGameStore } from '../../src/store/game-store.js';
-import { COLORS } from '../../src/theme/colors.js';
+import { colors } from '../../src/theme/colors.js';
 import { Card, CardColor, isWildCard } from '@stack-uno/game-engine';
 
 export default function GameScreen() {
@@ -131,7 +131,7 @@ export default function GameScreen() {
           />
         )}
 
-        {/* Opponents Row (horizontal scroll for up to 9 opponents) */}
+        {/* Opponents Row around table (supports 2 to 10 players) */}
         <View style={styles.opponentsContainer}>
           <ScrollView
             horizontal
@@ -154,21 +154,23 @@ export default function GameScreen() {
           </ScrollView>
         </View>
 
-        {/* Center Playing Field: Discard Pile & Draw Pile */}
-        <View style={styles.playField}>
-          <DrawPile
-            count={gameState.drawPileCount}
-            canDraw={isMyTurn && canDraw}
-            onDraw={handleDrawCard}
-          />
-          <DiscardPile
-            topCard={gameState.topDiscardCard}
-            activeColor={gameState.activeColor}
-            discardCount={gameState.discardPileCount}
-          />
+        {/* Central Game Table with Metallic Outline and Subtle Gradient */}
+        <View style={styles.gameTable}>
+          <View style={styles.tableInner}>
+            <DrawPile
+              count={gameState.drawPileCount}
+              canDraw={isMyTurn && canDraw}
+              onDraw={handleDrawCard}
+            />
+            <DiscardPile
+              topCard={gameState.topDiscardCard}
+              activeColor={gameState.activeColor}
+              discardCount={gameState.discardPileCount}
+            />
+          </View>
         </View>
 
-        {/* Action Controls (UNO declaration button) */}
+        {/* Action Controls & Hand Info */}
         <View style={styles.actionRow}>
           <View style={styles.handCountBadge}>
             <Text style={styles.handCountText}>MY HAND: {myHand.length} CARDS</Text>
@@ -204,7 +206,7 @@ export default function GameScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   screenContainer: {
     flex: 1,
@@ -217,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 16,
   },
   topBar: {
@@ -226,7 +228,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   opponentsContainer: {
-    height: 70,
+    height: 72,
     marginTop: 4,
   },
   opponentsScroll: {
@@ -234,30 +236,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  playField: {
+  gameTable: {
+    marginHorizontal: 16,
+    paddingVertical: 18,
+    backgroundColor: '#0F0F0F',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#262626',
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  tableInner: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 36,
-    marginVertical: 16,
+    gap: 40,
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   handCountBadge: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: '#2A2A2A',
   },
   handCountText: {
-    color: COLORS.softGold,
+    color: colors.goldSoft,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,

@@ -1,12 +1,18 @@
 import React from 'react';
 import {
-  TouchableOpacity,
   Text,
   StyleSheet,
   ViewStyle,
   TextStyle,
+  Pressable,
 } from 'react-native';
-import { COLORS } from '../theme/colors.js';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
+import { colors } from '../theme/colors.js';
+import { SPRING_CONFIG } from '../theme/animation.js';
 
 interface Props {
   title: string;
@@ -25,26 +31,45 @@ export const SecondaryButton: React.FC<Props> = ({
   textStyle,
   icon,
 }) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (!disabled) {
+      scale.value = withSpring(0.97, SPRING_CONFIG.buttonTap);
+    }
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, SPRING_CONFIG.buttonTap);
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-      disabled={disabled}
-      style={[styles.button, style, disabled && styles.disabledButton]}
-    >
-      {icon}
-      <Text style={[styles.text, textStyle, disabled && styles.disabledText]}>
-        {title}
-      </Text>
-    </TouchableOpacity>
+    <Animated.View style={[animatedStyle, style]}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        style={[styles.button, disabled && styles.disabledButton]}
+      >
+        {icon}
+        <Text style={[styles.text, textStyle, disabled && styles.disabledText]}>
+          {title}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1.5,
-    borderColor: COLORS.metallicGold,
+    borderColor: colors.goldMetallic,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -54,11 +79,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   disabledButton: {
-    borderColor: '#333333',
-    backgroundColor: '#111111',
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
   },
   text: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontWeight: '700',
     fontSize: 15,
     letterSpacing: 0.5,

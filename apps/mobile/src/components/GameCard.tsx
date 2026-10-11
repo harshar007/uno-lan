@@ -1,7 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Card, CardColor } from '@stack-uno/game-engine';
-import { COLORS } from '../theme/colors.js';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { Card } from '@stack-uno/game-engine';
+import { colors } from '../theme/colors.js';
+import { SPRING_CONFIG, ANIMATION_TIMING } from '../theme/animation.js';
 
 interface Props {
   card: Card;
@@ -20,18 +27,38 @@ export const GameCard: React.FC<Props> = ({
   onPress,
   disabled = false,
 }) => {
+  const translateY = useSharedValue(0);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isSelected) {
+      translateY.value = withSpring(-16, SPRING_CONFIG.cardLift);
+      scale.value = withSpring(1.06, SPRING_CONFIG.cardLift);
+    } else {
+      translateY.value = withSpring(0, SPRING_CONFIG.cardLift);
+      scale.value = withSpring(1, SPRING_CONFIG.cardLift);
+    }
+  }, [isSelected, translateY, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
+  }));
+
   const getBackgroundColor = (): string => {
     switch (card.color) {
       case 'red':
-        return COLORS.cardRed;
+        return colors.cardRed;
       case 'blue':
-        return COLORS.cardBlue;
+        return colors.cardBlue;
       case 'green':
-        return COLORS.cardGreen;
+        return colors.cardGreen;
       case 'yellow':
-        return COLORS.cardYellow;
+        return colors.cardYellow;
       default:
-        return COLORS.cardWild;
+        return colors.cardWild;
     }
   };
 
@@ -64,87 +91,90 @@ export const GameCard: React.FC<Props> = ({
 
   const symbol = getSymbol();
   const isWild = card.type === 'wild' || card.type === 'wild_draw_four';
+  const isYellow = card.color === 'yellow';
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      disabled={disabled || !onPress}
-      onPress={onPress}
-      style={[
-        styles.cardContainer,
-        {
-          width,
-          height,
-          backgroundColor: getBackgroundColor(),
-        },
-        isSelected && styles.selectedGlow,
-        isPlayable && !isSelected && styles.playableGlow,
-      ]}
-    >
-      {/* Top Left Corner */}
-      <View style={styles.topLeft}>
-        <Text
-          style={[
-            styles.cornerText,
-            { fontSize: cornerFontSize },
-            card.color === 'yellow' && styles.darkText,
-          ]}
-        >
-          {symbol}
-        </Text>
-      </View>
-
-      {/* Center Oval & Symbol */}
-      <View
+    <Animated.View style={[animatedStyle, { zIndex: isSelected ? 50 : 1 }]}>
+      <Pressable
+        disabled={disabled || !onPress}
+        onPress={onPress}
         style={[
-          styles.centerOval,
-          isWild && styles.wildOval,
-          card.color === 'yellow' && styles.yellowCenterOval,
+          styles.cardContainer,
+          {
+            width,
+            height,
+            backgroundColor: getBackgroundColor(),
+          },
+          isSelected && styles.selectedGlow,
+          isPlayable && !isSelected && styles.playableGlow,
+          disabled && !isPlayable && styles.disabledCard,
         ]}
       >
-        <Text
-          style={[
-            styles.centerText,
-            { fontSize: symbolFontSize },
-            isWild && styles.wildText,
-            card.color === 'yellow' && styles.darkText,
-          ]}
-        >
-          {symbol}
-        </Text>
-      </View>
-
-      {/* Bottom Right Corner */}
-      <View style={styles.bottomRight}>
-        <Text
-          style={[
-            styles.cornerText,
-            { fontSize: cornerFontSize },
-            card.color === 'yellow' && styles.darkText,
-          ]}
-        >
-          {symbol}
-        </Text>
-      </View>
-
-      {/* Wild 4-color Corner Accent */}
-      {isWild && (
-        <View style={styles.wildAccent}>
-          <View style={[styles.wildDot, { backgroundColor: COLORS.cardRed }]} />
-          <View style={[styles.wildDot, { backgroundColor: COLORS.cardBlue }]} />
-          <View style={[styles.wildDot, { backgroundColor: COLORS.cardYellow }]} />
-          <View style={[styles.wildDot, { backgroundColor: COLORS.cardGreen }]} />
+        {/* Top Left Corner */}
+        <View style={styles.topLeft}>
+          <Text
+            style={[
+              styles.cornerText,
+              { fontSize: cornerFontSize },
+              isYellow && styles.darkText,
+            ]}
+          >
+            {symbol}
+          </Text>
         </View>
-      )}
-    </TouchableOpacity>
+
+        {/* Center Oval & Graphic */}
+        <View
+          style={[
+            styles.centerOval,
+            isWild && styles.wildOval,
+            isYellow && styles.yellowCenterOval,
+          ]}
+        >
+          <Text
+            style={[
+              styles.centerText,
+              { fontSize: symbolFontSize },
+              isWild && styles.wildText,
+              isYellow && styles.darkText,
+            ]}
+          >
+            {symbol}
+          </Text>
+        </View>
+
+        {/* Bottom Right Corner */}
+        <View style={styles.bottomRight}>
+          <Text
+            style={[
+              styles.cornerText,
+              { fontSize: cornerFontSize },
+              isYellow && styles.darkText,
+            ]}
+          >
+            {symbol}
+          </Text>
+        </View>
+
+        {/* Wild 4-Quadrant Accent */}
+        {isWild && (
+          <View style={styles.wildAccent}>
+            <View style={[styles.wildDot, { backgroundColor: colors.cardRed }]} />
+            <View style={[styles.wildDot, { backgroundColor: colors.cardBlue }]} />
+            <View style={[styles.wildDot, { backgroundColor: colors.cardYellow }]} />
+            <View style={[styles.wildDot, { backgroundColor: colors.cardGreen }]} />
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   cardContainer: {
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF33',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF40',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -155,29 +185,31 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   selectedGlow: {
-    borderColor: COLORS.primaryGold,
-    borderWidth: 3,
-    shadowColor: COLORS.primaryGold,
+    borderColor: colors.gold,
+    borderWidth: 2.5,
+    shadowColor: colors.gold,
     shadowOpacity: 0.9,
     shadowRadius: 10,
     elevation: 10,
-    transform: [{ translateY: -12 }],
   },
   playableGlow: {
-    borderColor: COLORS.brightYellow,
+    borderColor: colors.goldSoft,
     borderWidth: 2,
-    shadowColor: COLORS.brightYellow,
-    shadowOpacity: 0.6,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.5,
     shadowRadius: 6,
+  },
+  disabledCard: {
+    opacity: 0.72,
   },
   topLeft: {
     position: 'absolute',
-    top: 4,
+    top: 5,
     left: 6,
   },
   bottomRight: {
     position: 'absolute',
-    bottom: 4,
+    bottom: 5,
     right: 6,
     transform: [{ rotate: '180deg' }],
   },
@@ -197,8 +229,8 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-18deg' }],
   },
   wildOval: {
-    borderColor: COLORS.primaryGold,
-    backgroundColor: '#08080888',
+    borderColor: colors.goldMetallic,
+    backgroundColor: '#080808AA',
   },
   yellowCenterOval: {
     borderColor: '#00000022',
@@ -207,20 +239,20 @@ const styles = StyleSheet.create({
   centerText: {
     fontWeight: '900',
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   wildText: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
   },
   darkText: {
     color: '#111111',
   },
   wildAccent: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: 5,
+    right: 5,
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: 14,

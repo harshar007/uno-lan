@@ -1,7 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { CardColor } from '@stack-uno/game-engine';
-import { COLORS } from '../theme/colors.js';
+import { colors } from '../theme/colors.js';
+import { SPRING_CONFIG, ANIMATION_TIMING } from '../theme/animation.js';
 
 interface Props {
   visible: boolean;
@@ -10,27 +17,48 @@ interface Props {
 }
 
 export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor }) => {
+  const scale = useSharedValue(0.85);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      scale.value = withSpring(1, SPRING_CONFIG.modalPopup);
+      opacity.value = withTiming(1, { duration: ANIMATION_TIMING.modalEntrance });
+    } else {
+      scale.value = 0.85;
+      opacity.value = 0;
+    }
+  }, [visible, scale, opacity]);
+
+  const dialogAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
   const colorOptions: Array<{ color: CardColor; label: string; hex: string }> = [
-    { color: 'red', label: 'RED', hex: COLORS.cardRed },
-    { color: 'blue', label: 'BLUE', hex: COLORS.cardBlue },
-    { color: 'green', label: 'GREEN', hex: COLORS.cardGreen },
-    { color: 'yellow', label: 'YELLOW', hex: COLORS.cardYellow },
+    { color: 'red', label: 'RED', hex: colors.cardRed },
+    { color: 'blue', label: 'BLUE', hex: colors.cardBlue },
+    { color: 'green', label: 'GREEN', hex: colors.cardGreen },
+    { color: 'yellow', label: 'YELLOW', hex: colors.cardYellow },
   ];
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="none">
       <View style={styles.overlay}>
-        <View style={styles.dialog}>
+        <Animated.View style={[styles.dialog, dialogAnimatedStyle]}>
           <Text style={styles.title}>CHOOSE NEXT COLOR</Text>
           <Text style={styles.subtitle}>Select the color to continue gameplay</Text>
 
           <View style={styles.grid}>
             {colorOptions.map((item) => (
-              <TouchableOpacity
+              <Pressable
                 key={item.color}
-                activeOpacity={0.8}
                 onPress={() => onSelectColor(item.color)}
-                style={[styles.colorButton, { backgroundColor: item.hex }]}
+                style={({ pressed }) => [
+                  styles.colorButton,
+                  { backgroundColor: item.hex },
+                  pressed && styles.colorButtonPressed,
+                ]}
               >
                 <Text
                   style={[
@@ -40,10 +68,10 @@ export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor }) => {
                 >
                   {item.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -52,31 +80,36 @@ export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.82)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   dialog: {
-    backgroundColor: COLORS.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 16,
     padding: 24,
     width: '100%',
     maxWidth: 320,
     borderWidth: 2,
-    borderColor: COLORS.metallicGold,
+    borderColor: colors.goldMetallic,
     alignItems: 'center',
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
   title: {
     fontSize: 18,
     fontWeight: '900',
-    color: COLORS.primaryGold,
+    color: colors.gold,
     letterSpacing: 1,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     marginVertical: 12,
     textAlign: 'center',
   },
@@ -99,10 +132,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
+  colorButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.96 }],
+  },
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '900',
-    fontSize: 14,
+    fontSize: 15,
     letterSpacing: 1,
   },
   darkText: {

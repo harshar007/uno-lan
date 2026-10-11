@@ -1,14 +1,20 @@
 import React from 'react';
 import {
-  TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  Pressable,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../theme/colors.js';
+import { colors } from '../theme/colors.js';
+import { SPRING_CONFIG } from '../theme/animation.js';
 
 interface Props {
   title: string;
@@ -29,35 +35,53 @@ export const GoldenButton: React.FC<Props> = ({
   textStyle,
   icon,
 }) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (!disabled && !loading) {
+      scale.value = withSpring(0.96, SPRING_CONFIG.buttonTap);
+    }
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, SPRING_CONFIG.buttonTap);
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={onPress}
-      disabled={disabled || loading}
-      style={[styles.wrapper, style, disabled && styles.disabledWrapper]}
-    >
-      <LinearGradient
-        colors={
-          disabled
-            ? ['#444444', '#2A2A2A']
-            : [COLORS.primaryGold, COLORS.metallicGold, COLORS.deepGold]
-        }
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradient}
+    <Animated.View style={[styles.wrapper, style, animatedStyle, disabled && styles.disabledWrapper]}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
       >
-        {loading ? (
-          <ActivityIndicator color="#080808" size="small" />
-        ) : (
-          <>
-            {icon}
-            <Text style={[styles.text, textStyle, disabled && styles.disabledText]}>
-              {title}
-            </Text>
-          </>
-        )}
-      </LinearGradient>
-    </TouchableOpacity>
+        <LinearGradient
+          colors={
+            disabled
+              ? ['#3A3A3A', '#222222']
+              : [colors.gold, colors.goldMetallic, colors.goldDeep]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        >
+          {loading ? (
+            <ActivityIndicator color="#080808" size="small" />
+          ) : (
+            <>
+              {icon}
+              <Text style={[styles.text, textStyle, disabled && styles.disabledText]}>
+                {title}
+              </Text>
+            </>
+          )}
+        </LinearGradient>
+      </Pressable>
+    </Animated.View>
   );
 };
 
@@ -65,9 +89,9 @@ const styles = StyleSheet.create({
   wrapper: {
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: COLORS.primaryGold,
+    shadowColor: colors.gold,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 6,
   },

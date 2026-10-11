@@ -1,6 +1,15 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../theme/colors.js';
+import React, { useEffect } from 'react';
+import { Text, StyleSheet, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withRepeat,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import { colors } from '../theme/colors.js';
+import { SPRING_CONFIG } from '../theme/animation.js';
 
 interface Props {
   onPress: () => void;
@@ -8,35 +17,67 @@ interface Props {
 }
 
 export const UnoButton: React.FC<Props> = ({ onPress, disabled = false }) => {
+  const scale = useSharedValue(1);
+  const pulseScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (!disabled) {
+      pulseScale.value = withRepeat(
+        withTiming(1.08, { duration: 650, easing: Easing.inOut(Easing.quad) }),
+        -1,
+        true
+      );
+    } else {
+      pulseScale.value = 1;
+    }
+  }, [disabled, pulseScale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value * pulseScale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (!disabled) {
+      scale.value = withSpring(0.92, SPRING_CONFIG.buttonTap);
+    }
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, SPRING_CONFIG.buttonTap);
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      disabled={disabled}
-      onPress={onPress}
-      style={[styles.button, disabled && styles.disabledButton]}
-    >
-      <Text style={[styles.text, disabled && styles.disabledText]}>UNO!</Text>
-    </TouchableOpacity>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        disabled={disabled}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={[styles.button, disabled && styles.disabledButton]}
+      >
+        <Text style={[styles.text, disabled && styles.disabledText]}>UNO!</Text>
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.brightYellow,
-    paddingHorizontal: 20,
+    backgroundColor: colors.brightYellow,
+    paddingHorizontal: 22,
     paddingVertical: 10,
     borderRadius: 24,
     borderWidth: 2,
     borderColor: '#000000',
-    shadowColor: COLORS.brightYellow,
+    shadowColor: colors.brightYellow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    elevation: 8,
   },
   disabledButton: {
-    backgroundColor: '#333333',
-    borderColor: '#222222',
+    backgroundColor: '#303030',
+    borderColor: '#202020',
     shadowOpacity: 0,
     elevation: 0,
   },

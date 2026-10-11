@@ -4,12 +4,12 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
 import { GoldenButton } from '../src/components/GoldenButton.js';
-import { SecondaryButton } from '../src/components/SecondaryButton.js';
+import { DangerButton } from '../src/components/DangerButton.js';
 import { RoomCode } from '../src/components/RoomCode.js';
 import { PlayerAvatar } from '../src/components/PlayerAvatar.js';
 import { ErrorMessage } from '../src/components/ErrorMessage.js';
 import { useGameStore } from '../src/store/game-store.js';
-import { COLORS } from '../src/theme/colors.js';
+import { colors } from '../src/theme/colors.js';
 
 export default function LobbyScreen() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function LobbyScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No active room found.</Text>
-          <SecondaryButton title="RETURN HOME" onPress={() => router.replace('/')} />
+          <DangerButton title="RETURN HOME" onPress={() => router.replace('/')} />
         </View>
       </SafeAreaView>
     );
@@ -107,7 +107,7 @@ export default function LobbyScreen() {
           </View>
         </View>
 
-        {/* Host Start Game Controls */}
+        {/* Host Controls or Player Waiting Info */}
         <View style={styles.actions}>
           {isHost ? (
             <>
@@ -117,7 +117,7 @@ export default function LobbyScreen() {
                 loading={loading}
                 disabled={!canStart}
               />
-              <SecondaryButton
+              <DangerButton
                 title="LEAVE ROOM"
                 onPress={handleLeave}
               />
@@ -129,7 +129,7 @@ export default function LobbyScreen() {
                   Waiting for room host to start the match...
                 </Text>
               </View>
-              <SecondaryButton
+              <DangerButton
                 title="LEAVE ROOM"
                 onPress={handleLeave}
               />
@@ -144,7 +144,7 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   container: {
     paddingHorizontal: 24,
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   emptyText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 16,
   },
   codeWrapper: {
@@ -167,22 +167,22 @@ const styles = StyleSheet.create({
   modeBadge: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: colors.border,
     marginVertical: 8,
   },
   modeText: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontWeight: '800',
     fontSize: 12,
     letterSpacing: 1,
   },
   countText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '700',
     fontSize: 12,
   },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   sectionTitle: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 1.5,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   playerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
@@ -210,22 +210,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   myPlayerItem: {
-    borderColor: COLORS.metallicGold,
-    backgroundColor: '#16140D',
+    borderColor: colors.goldMetallic,
+    backgroundColor: '#18140A',
   },
   playerDetails: {
     flex: 1,
   },
   playerName: {
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: '700',
   },
   myPlayerName: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
   },
   playerMeta: {
-    color: COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   waitingNotice: {
-    backgroundColor: COLORS.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   waitingText: {
-    color: COLORS.softGold,
+    color: colors.goldSoft,
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
