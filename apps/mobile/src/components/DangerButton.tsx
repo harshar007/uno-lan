@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors } from '../theme/colors.js';
 import { SPRING_CONFIG } from '../theme/animation.js';
+import { haptic } from '../services/haptics.js';
 
 interface Props {
   title: string;
@@ -39,6 +40,7 @@ export const DangerButton: React.FC<Props> = ({
 
   const handlePressIn = () => {
     if (!disabled) {
+      haptic.mediumImpact();
       scale.value = withSpring(0.97, SPRING_CONFIG.buttonTap);
     }
   };

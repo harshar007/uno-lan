@@ -9,6 +9,7 @@ import Animated, {
 import { Card } from '@stack-uno/game-engine';
 import { colors } from '../theme/colors.js';
 import { SPRING_CONFIG, ANIMATION_TIMING } from '../theme/animation.js';
+import { haptic } from '../services/haptics.js';
 
 interface Props {
   card: Card;
@@ -97,7 +98,10 @@ export const GameCard: React.FC<Props> = ({
     <Animated.View style={[animatedStyle, { zIndex: isSelected ? 50 : 1 }]}>
       <Pressable
         disabled={disabled || !onPress}
-        onPress={onPress}
+        onPress={() => {
+          haptic.selection();
+          onPress?.();
+        }}
         style={[
           styles.cardContainer,
           {

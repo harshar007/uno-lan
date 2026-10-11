@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors } from '../theme/colors.js';
 import { SPRING_CONFIG } from '../theme/animation.js';
+import { haptic } from '../services/haptics.js';
 
 interface Props {
   onPress: () => void;
@@ -38,6 +39,7 @@ export const UnoButton: React.FC<Props> = ({ onPress, disabled = false }) => {
 
   const handlePressIn = () => {
     if (!disabled) {
+      haptic.heavyImpact();
       scale.value = withSpring(0.92, SPRING_CONFIG.buttonTap);
     }
   };

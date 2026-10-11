@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TextInput, ScrollView, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Network from 'expo-network';
 import { StackUnoLogo } from '../src/components/StackUnoLogo.js';
 import { GoldenButton } from '../src/components/GoldenButton.js';
 import { SecondaryButton } from '../src/components/SecondaryButton.js';
 import { ConnectionBadge } from '../src/components/ConnectionBadge.js';
 import { useGameStore } from '../src/store/game-store.js';
-import { COLORS } from '../src/theme/colors.js';
+import { colors } from '../src/theme/colors.js';
+import { haptic } from '../src/services/haptics.js';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -15,6 +17,28 @@ export default function SettingsScreen() {
 
   const [inputUrl, setInputUrl] = useState(serverUrl);
   const [testing, setTesting] = useState(false);
+  const [deviceIp, setDeviceIp] = useState<string | null>(null);
+  const [hapticsEnabled, setHapticsEnabled] = useState(haptic.isEnabled());
+
+  useEffect(() => {
+    async function loadNetworkInfo() {
+      try {
+        const ip = await Network.getIpAddressAsync();
+        setDeviceIp(ip);
+      } catch {
+        setDeviceIp(null);
+      }
+    }
+    loadNetworkInfo();
+  }, []);
+
+  const handleToggleHaptics = (val: boolean) => {
+    setHapticsEnabled(val);
+    haptic.setEnabled(val);
+    if (val) {
+      haptic.success();
+    }
+  };
 
   const handleSaveAndTest = async () => {
     setServerUrl(inputUrl);
@@ -25,11 +49,14 @@ export default function SettingsScreen() {
       const res = await fetch(`${targetUrl}/api/health`, { method: 'GET' });
       if (res.ok) {
         connectSocket();
+        await haptic.success();
         Alert.alert('Connection Successful', `Successfully connected to host server at ${targetUrl}`);
       } else {
+        await haptic.warning();
         Alert.alert('Connection Error', `Server responded with status ${res.status}`);
       }
-    } catch (err: any) {
+    } catch {
+      await haptic.error();
       Alert.alert(
         'Connection Failed',
         `Unable to reach server at ${inputUrl}. Make sure the host computer has run 'npm run dev:server' and your phone is on the same Wi-Fi network.`
@@ -60,7 +87,7 @@ export default function SettingsScreen() {
             value={inputUrl}
             onChangeText={setInputUrl}
             placeholder="http://192.168.1.50:3000"
-            placeholderTextColor={COLORS.textMuted}
+            placeholderTextColor={colors.textMuted}
             autoCapitalize="none"
           />
 
@@ -69,6 +96,29 @@ export default function SettingsScreen() {
             onPress={handleSaveAndTest}
             loading={testing}
           />
+        </View>
+
+        {/* Device Network Info (expo-network) */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>DEVICE NETWORK STATUS</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Your Device LAN IP:</Text>
+            <Text style={styles.infoValue}>{deviceIp || 'Detecting...'}</Text>
+          </View>
+        </View>
+
+        {/* Preferences (Haptics toggle) */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>HAPTICS & FEEDBACK</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Vibration / Haptic Touch:</Text>
+            <Switch
+              value={hapticsEnabled}
+              onValueChange={handleToggleHaptics}
+              trackColor={{ false: '#333333', true: colors.gold }}
+              thumbColor={hapticsEnabled ? '#FFFFFF' : '#888888'}
+            />
+          </View>
         </View>
 
         {/* How to Connect Devices */}
@@ -100,14 +150,14 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   container: {
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
   screenTitle: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: 2,
@@ -115,34 +165,64 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   section: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     padding: 18,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#262626',
-    marginVertical: 14,
+    borderColor: colors.border,
+    marginVertical: 10,
     gap: 12,
   },
   sectionTitle: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1,
   },
   sectionDesc: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
   },
   input: {
-    backgroundColor: COLORS.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 1.5,
     borderColor: '#333333',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
     fontSize: 15,
+  },
+  infoCard: {
+    backgroundColor: colors.surface,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginVertical: 8,
+    gap: 8,
+  },
+  infoTitle: {
+    color: colors.goldMetallic,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  infoValue: {
+    color: colors.gold,
+    fontWeight: '800',
+    fontSize: 13,
+    fontFamily: 'monospace',
   },
   guideCard: {
     backgroundColor: '#141414',
@@ -154,19 +234,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   guideTitle: {
-    color: COLORS.softGold,
+    color: colors.goldSoft,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 1,
     marginBottom: 4,
   },
   guideStep: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
   },
   codeText: {
-    color: COLORS.primaryGold,
+    color: colors.gold,
     fontFamily: 'monospace',
     fontWeight: '700',
   },

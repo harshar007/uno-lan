@@ -15,6 +15,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors.js';
 import { SPRING_CONFIG } from '../theme/animation.js';
+import { haptic } from '../services/haptics.js';
 
 interface Props {
   title: string;
@@ -43,6 +44,7 @@ export const GoldenButton: React.FC<Props> = ({
 
   const handlePressIn = () => {
     if (!disabled && !loading) {
+      haptic.lightImpact();
       scale.value = withSpring(0.96, SPRING_CONFIG.buttonTap);
     }
   };

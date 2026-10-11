@@ -13,6 +13,7 @@ import { ColorPicker } from '../../src/components/ColorPicker.js';
 import { ErrorMessage } from '../../src/components/ErrorMessage.js';
 import { useGameStore } from '../../src/store/game-store.js';
 import { colors } from '../../src/theme/colors.js';
+import { haptic } from '../../src/services/haptics.js';
 import { Card, CardColor, isWildCard } from '@stack-uno/game-engine';
 
 export default function GameScreen() {
@@ -64,28 +65,33 @@ export default function GameScreen() {
 
   const handleCardSelect = async (card: Card) => {
     if (!isMyTurn) {
+      await haptic.warning();
       Alert.alert('Not Your Turn', 'Please wait for your turn to play.');
       return;
     }
 
     if (!legalCardIds.includes(card.id)) {
+      await haptic.error();
       Alert.alert('Illegal Move', 'This card does not match the active color or top discard.');
       return;
     }
 
     // If card is Wild or Wild Draw Four, prompt for color selection
     if (isWildCard(card)) {
+      await haptic.mediumImpact();
       setPendingWildCard(card);
       setShowColorPicker(true);
       return;
     }
 
     // Play standard card
+    await haptic.lightImpact();
     await playCardAction(card.id);
   };
 
   const handleColorSelected = async (color: CardColor) => {
     setShowColorPicker(false);
+    await haptic.success();
     if (pendingWildCard) {
       await playCardAction(pendingWildCard.id, color);
       setPendingWildCard(null);
@@ -96,14 +102,17 @@ export default function GameScreen() {
 
   const handleDrawCard = async () => {
     if (!isMyTurn) return;
+    await haptic.lightImpact();
     await drawCardAction();
   };
 
   const handleDeclareUno = async () => {
+    await haptic.success();
     await declareUnoAction();
   };
 
   const handleCalloutUno = async (targetPlayerId: string) => {
+    await haptic.heavyImpact();
     await calloutUnoAction(targetPlayerId);
   };
 

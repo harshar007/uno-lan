@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,10 +8,15 @@ import { SecondaryButton } from '../src/components/SecondaryButton.js';
 import { DangerButton } from '../src/components/DangerButton.js';
 import { useGameStore } from '../src/store/game-store.js';
 import { colors } from '../src/theme/colors.js';
+import { haptic } from '../src/services/haptics.js';
 
 export default function ResultsScreen() {
   const router = useRouter();
   const { winnerId, standings, room, playerId, startGame, leaveRoom } = useGameStore();
+
+  useEffect(() => {
+    haptic.success();
+  }, []);
 
   const isHost = room?.hostId === playerId;
   const winner = standings.find((s) => s.playerId === winnerId) || standings[0];
