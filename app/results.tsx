@@ -12,11 +12,18 @@ import { haptic } from '../src/services/haptics';
 
 export default function ResultsScreen() {
   const router = useRouter();
-  const { winnerId, standings, room, playerId, startGame, leaveRoom } = useGameStore();
+  const { winnerId, standings, room, playerId, startGame, leaveRoom, gameState } = useGameStore();
 
   useEffect(() => {
     haptic.success();
   }, []);
+
+  // When game restarts, automatically navigate all players into the match
+  useEffect(() => {
+    if (gameState && gameState.status === 'in_progress' && room) {
+      router.replace(`/game/${room.code}`);
+    }
+  }, [gameState?.status, room, router]);
 
   const isHost = room?.hostId === playerId;
   const winner = standings.find((s) => s.playerId === winnerId) || standings[0];

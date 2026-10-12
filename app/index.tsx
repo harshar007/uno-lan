@@ -117,6 +117,21 @@ export default function HomeScreen() {
 
             <Text style={styles.instantPlayTitle}>SOLO MATCH (VS AI BOTS)</Text>
 
+            {/* Rules & Game Mode Selection */}
+            <View style={styles.modesSectionInner}>
+              <Text style={styles.fieldSectionLabel}>GAME MODE & RULES:</Text>
+              <GameModeCard
+                mode="classic"
+                isSelected={selectedPreviewMode === 'classic'}
+                onSelect={() => setSelectedPreviewMode('classic')}
+              />
+              <GameModeCard
+                mode="reverse"
+                isSelected={selectedPreviewMode === 'reverse'}
+                onSelect={() => setSelectedPreviewMode('reverse')}
+              />
+            </View>
+
             {/* Player count selector for local game */}
             <View style={styles.playerCountRow}>
               <Text style={styles.playerCountLabel}>PLAYERS:</Text>
@@ -147,21 +162,6 @@ export default function HomeScreen() {
             <GoldenButton
               title="START MATCH NOW"
               onPress={handleStartLocalMatch}
-            />
-          </View>
-
-          {/* Game Modes Selector */}
-          <View style={styles.modesSection}>
-            <Text style={styles.sectionTitle}>RULES & GAME MODE</Text>
-            <GameModeCard
-              mode="classic"
-              isSelected={selectedPreviewMode === 'classic'}
-              onSelect={() => setSelectedPreviewMode('classic')}
-            />
-            <GameModeCard
-              mode="reverse"
-              isSelected={selectedPreviewMode === 'reverse'}
-              onSelect={() => setSelectedPreviewMode('reverse')}
             />
           </View>
 
@@ -264,6 +264,17 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.2,
     marginBottom: 12,
+  },
+  modesSectionInner: {
+    marginBottom: 14,
+    gap: 8,
+  },
+  fieldSectionLabel: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 2,
   },
   playerCountRow: {
     flexDirection: 'row',

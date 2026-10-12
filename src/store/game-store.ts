@@ -18,6 +18,10 @@ import {
   calculateStandings,
 } from '@stack-uno/game-engine';
 import { decideBotMove } from '../services/bot-ai';
+import { EmbeddedHostServer } from '../services/embedded-host';
+import { UnifiedClientSocket } from '../services/tcp-client';
+
+export type AnyClientSocket = Socket | UnifiedClientSocket;
 
 export interface RoomPublicState {
   code: string;
@@ -58,9 +62,12 @@ export function detectDefaultServerUrl(): string {
 interface GameStoreState {
   // Multiplayer Connection
   serverUrl: string;
-  socket: Socket | null;
+  socket: AnyClientSocket | null;
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   errorMessage: string | null;
+
+  // Embedded Hotspot Host State
+  isHotspotHost: boolean;
 
   // Local Match Engine
   isLocalGame: boolean;
@@ -103,7 +110,10 @@ interface GameStoreState {
   }) => void;
 
   // Multiplayer Actions
-  connectSocket: () => Socket;
+  connectSocket: () => AnyClientSocket;
+  connectTcpSocket: (host: string, port?: number) => Promise<UnifiedClientSocket>;
+  startHotspotHost: () => Promise<boolean>;
+  stopHotspotHost: () => void;
   createRoom: (
     playerName: string,
     maxPlayers: number,
@@ -127,7 +137,7 @@ const BOT_NAMES = ['Aura (AI)', 'Midas (AI)', 'Cipher (AI)', 'Onyx (AI)', 'Sol (
 /**
  * Awaits socket connection state with a graceful timeout.
  */
-function waitForSocketConnection(socket: Socket, timeoutMs = 5000): Promise<boolean> {
+function waitForSocketConnection(socket: AnyClientSocket, timeoutMs = 5000): Promise<boolean> {
   if (socket.connected) return Promise.resolve(true);
 
   return new Promise((resolve) => {
@@ -163,6 +173,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   connectionStatus: 'disconnected',
   errorMessage: null,
 
+  isHotspotHost: false,
   isLocalGame: false,
   localGameState: null,
 
@@ -277,8 +288,93 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   },
 
   // -------------------------------------------------------------
-  // MULTIPLAYER SOCKET CONNECTION (On-Demand)
+  // MULTIPLAYER SOCKET CONNECTIONS (Native TCP Hotspot & LAN)
   // -------------------------------------------------------------
+  startHotspotHost: async () => {
+    try {
+      const server = EmbeddedHostServer.getInstance();
+      const started = await server.start(3000);
+      if (started) {
+        set({ isHotspotHost: true });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('[GameStore] Failed to start hotspot server:', err);
+      return false;
+    }
+  },
+
+  stopHotspotHost: () => {
+    try {
+      const server = EmbeddedHostServer.getInstance();
+      server.stop();
+    } catch {}
+    set({ isHotspotHost: false });
+  },
+
+  connectTcpSocket: async (host: string, port = 3000) => {
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+    }
+
+    set({ connectionStatus: 'connecting', errorMessage: null });
+    const tcpSocket = new UnifiedClientSocket();
+
+    tcpSocket.on('connect', () => {
+      set({ connectionStatus: 'connected', errorMessage: null });
+    });
+
+    tcpSocket.on('connect_error', () => {
+      set({ connectionStatus: 'error' });
+    });
+
+    tcpSocket.on('disconnect', () => {
+      set({ connectionStatus: 'disconnected' });
+    });
+
+    tcpSocket.on('room:updated', (data: { room: RoomPublicState }) => {
+      set({ room: data.room });
+    });
+
+    tcpSocket.on('game:state', (data: { gameState: PublicGameState }) => {
+      set({
+        gameState: data.gameState,
+        winnerId: data.gameState.winnerId || null,
+      });
+    });
+
+    tcpSocket.on(
+      'game:hand',
+      (data: { hand: Card[]; legalCardIds: string[]; canDraw: boolean; canDeclareUno: boolean }) => {
+        set({
+          myHand: data.hand,
+          legalCardIds: data.legalCardIds,
+          canDraw: data.canDraw,
+          canDeclareUno: data.canDeclareUno,
+        });
+      }
+    );
+
+    tcpSocket.on('game:finished', (data: { winnerId: string; standings: PlayerStanding[] }) => {
+      set({
+        winnerId: data.winnerId,
+        standings: data.standings,
+      });
+    });
+
+    tcpSocket.on('game:penalty', (data: { playerId: string; reason: string; count: number }) => {
+      set({
+        penaltyNotification: `${data.reason}: +${data.count} cards penalty!`,
+      });
+    });
+
+    set({ socket: tcpSocket });
+    await tcpSocket.connect(host, port);
+    return tcpSocket;
+  },
+
   connectSocket: () => {
     const { socket, serverUrl } = get();
     if (socket && socket.connected) {
@@ -287,6 +383,60 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
     if (socket) {
       socket.disconnect();
+    }
+
+    // Check if connecting via native TCP socket (e.g. tcp://host:port or hotspot mode)
+    if (serverUrl.startsWith('tcp://') || serverUrl.includes('192.168.43.1')) {
+      const clean = serverUrl.replace(/^tcp:\/\//, '').replace(/^http:\/\//, '');
+      const [host, portStr] = clean.split(':');
+      const port = portStr ? parseInt(portStr, 10) : 3000;
+      const tcpClient = new UnifiedClientSocket();
+
+      set({ connectionStatus: 'connecting', errorMessage: null, socket: tcpClient });
+
+      tcpClient.on('connect', () => {
+        set({ connectionStatus: 'connected', errorMessage: null });
+      });
+      tcpClient.on('connect_error', () => {
+        set({ connectionStatus: 'error' });
+      });
+      tcpClient.on('disconnect', () => {
+        set({ connectionStatus: 'disconnected' });
+      });
+      tcpClient.on('room:updated', (data: { room: RoomPublicState }) => {
+        set({ room: data.room });
+      });
+      tcpClient.on('game:state', (data: { gameState: PublicGameState }) => {
+        set({
+          gameState: data.gameState,
+          winnerId: data.gameState.winnerId || null,
+        });
+      });
+      tcpClient.on(
+        'game:hand',
+        (data: { hand: Card[]; legalCardIds: string[]; canDraw: boolean; canDeclareUno: boolean }) => {
+          set({
+            myHand: data.hand,
+            legalCardIds: data.legalCardIds,
+            canDraw: data.canDraw,
+            canDeclareUno: data.canDeclareUno,
+          });
+        }
+      );
+      tcpClient.on('game:finished', (data: { winnerId: string; standings: PlayerStanding[] }) => {
+        set({
+          winnerId: data.winnerId,
+          standings: data.standings,
+        });
+      });
+      tcpClient.on('game:penalty', (data: { playerId: string; reason: string; count: number }) => {
+        set({
+          penaltyNotification: `${data.reason}: +${data.count} cards penalty!`,
+        });
+      });
+
+      tcpClient.connect(host || '127.0.0.1', port);
+      return tcpClient;
     }
 
     set({ connectionStatus: 'connecting', errorMessage: null });
@@ -662,13 +812,18 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       botTurnTimeout = null;
     }
 
-    const { socket, room, sessionToken } = get();
+    const { socket, room, sessionToken, isHotspotHost, stopHotspotHost } = get();
     if (socket && room && sessionToken && !get().isLocalGame) {
       socket.emit('room:leave', { roomCode: room.code, sessionToken });
     }
 
+    if (isHotspotHost) {
+      stopHotspotHost();
+    }
+
     set({
       isLocalGame: false,
+      isHotspotHost: false,
       localGameState: null,
       room: null,
       gameState: null,

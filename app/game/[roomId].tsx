@@ -77,6 +77,8 @@ export default function GameScreen() {
       return;
     }
 
+    setSelectedCardId(card.id);
+
     // If card is Wild or Wild Draw Four, prompt for color selection
     if (isWildCard(card)) {
       await haptic.mediumImpact();
@@ -88,10 +90,12 @@ export default function GameScreen() {
     // Play standard card
     await haptic.lightImpact();
     await playCardAction(card.id);
+    setSelectedCardId(null);
   };
 
   const handleColorSelected = async (color: CardColor) => {
     setShowColorPicker(false);
+    setSelectedCardId(null);
     await haptic.success();
     if (pendingWildCard) {
       await playCardAction(pendingWildCard.id, color);
@@ -247,11 +251,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   opponentsContainer: {
-    height: 72,
+    height: 88,
     marginTop: 4,
   },
   opponentsScroll: {
     paddingHorizontal: 16,
+    paddingVertical: 6,
     alignItems: 'center',
     gap: 8,
   },

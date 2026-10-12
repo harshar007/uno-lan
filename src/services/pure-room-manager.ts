@@ -1,0 +1,299 @@
+import { Room, RoomPlayer, RoomPublicState, RoomSettings } from './room-types';
+import { createGame, GameState } from '../game-engine';
+
+export const EMBEDDED_CONFIG = {
+  PORT: 3000,
+  HOST: '0.0.0.0',
+  RECONNECT_GRACE_PERIOD_MS: 60 * 1000,
+  MAX_PLAYERS_PER_ROOM: 10,
+  MIN_PLAYERS_TO_START: 2,
+};
+
+function generateRandomHex(byteCount: number): string {
+  let hex = '';
+  for (let i = 0; i < byteCount; i++) {
+    const byte = Math.floor(Math.random() * 256);
+    hex += byte.toString(16).padStart(2, '0');
+  }
+  return hex;
+}
+
+export class PureRoomManager {
+  private rooms: Map<string, Room> = new Map();
+  // Map socketId -> { roomCode, playerId }
+  private socketIndex: Map<string, { roomCode: string; playerId: string }> = new Map();
+
+  /**
+   * Generates a distinct 5-character uppercase alphanumeric room code.
+   */
+  private generateRoomCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // omits confusing I, 1, O, 0
+    let code: string;
+    do {
+      code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    } while (this.rooms.has(code));
+    return code;
+  }
+
+  public createRoom(
+    hostName: string,
+    settings: Partial<RoomSettings>,
+    socketId: string,
+    avatarSeed?: string
+  ): { room: Room; hostPlayer: RoomPlayer } {
+    const code = this.generateRoomCode();
+    const hostId = `usr_${generateRandomHex(4)}`;
+    const sessionToken = `sess_${generateRandomHex(16)}`;
+
+    const hostPlayer: RoomPlayer = {
+      id: hostId,
+      name: hostName.trim() || 'Host',
+      sessionToken,
+      socketId,
+      isHost: true,
+      isConnected: true,
+      avatarSeed,
+    };
+
+    const roomSettings: RoomSettings = {
+      maxPlayers: Math.min(Math.max(settings.maxPlayers || 10, 2), EMBEDDED_CONFIG.MAX_PLAYERS_PER_ROOM),
+      gameMode: settings.gameMode || 'classic',
+      password: settings.password,
+    };
+
+    const room: Room = {
+      code,
+      hostId,
+      settings: roomSettings,
+      status: 'lobby',
+      players: new Map([[hostId, hostPlayer]]),
+      createdAt: Date.now(),
+    };
+
+    this.rooms.set(code, room);
+    this.socketIndex.set(socketId, { roomCode: code, playerId: hostId });
+
+    return { room, hostPlayer };
+  }
+
+  public joinRoom(
+    code: string,
+    playerName: string,
+    socketId: string,
+    password?: string,
+    avatarSeed?: string
+  ): { room: Room; player: RoomPlayer } {
+    const normalizedCode = code.toUpperCase().trim();
+    const room = this.rooms.get(normalizedCode);
+
+    if (!room) {
+      throw new Error(`Room '${normalizedCode}' not found.`);
+    }
+
+    if (room.status !== 'lobby') {
+      throw new Error('Game is already in progress or finished.');
+    }
+
+    if (room.players.size >= room.settings.maxPlayers) {
+      throw new Error(`Room is full (${room.players.size}/${room.settings.maxPlayers} players).`);
+    }
+
+    if (room.settings.password && room.settings.password !== password) {
+      throw new Error('Incorrect room password.');
+    }
+
+    const playerId = `usr_${generateRandomHex(4)}`;
+    const sessionToken = `sess_${generateRandomHex(16)}`;
+
+    const player: RoomPlayer = {
+      id: playerId,
+      name: playerName.trim() || `Player ${room.players.size + 1}`,
+      sessionToken,
+      socketId,
+      isHost: false,
+      isConnected: true,
+      avatarSeed,
+    };
+
+    room.players.set(playerId, player);
+    this.socketIndex.set(socketId, { roomCode: normalizedCode, playerId });
+
+    return { room, player };
+  }
+
+  public reconnect(
+    code: string,
+    sessionToken: string,
+    newSocketId: string
+  ): { room: Room; player: RoomPlayer } {
+    const room = this.rooms.get(code.toUpperCase().trim());
+    if (!room) {
+      throw new Error('Room not found.');
+    }
+
+    let foundPlayer: RoomPlayer | undefined;
+    for (const player of room.players.values()) {
+      if (player.sessionToken === sessionToken) {
+        foundPlayer = player;
+        break;
+      }
+    }
+
+    if (!foundPlayer) {
+      throw new Error('Invalid or expired session token.');
+    }
+
+    // Clean up old socket reference if any
+    if (foundPlayer.socketId) {
+      this.socketIndex.delete(foundPlayer.socketId);
+    }
+
+    foundPlayer.socketId = newSocketId;
+    foundPlayer.isConnected = true;
+    foundPlayer.disconnectTimestamp = undefined;
+
+    this.socketIndex.set(newSocketId, { roomCode: room.code, playerId: foundPlayer.id });
+
+    return { room, player: foundPlayer };
+  }
+
+  public leaveRoom(code: string, sessionToken: string): { room?: Room; player?: RoomPlayer; deleted?: boolean } {
+    const room = this.rooms.get(code.toUpperCase().trim());
+    if (!room) return {};
+
+    const player = Array.from(room.players.values()).find((p) => p.sessionToken === sessionToken);
+    if (!player) return { room };
+
+    if (player.socketId) {
+      this.socketIndex.delete(player.socketId);
+    }
+
+    if (room.status === 'lobby') {
+      room.players.delete(player.id);
+
+      // If room is now empty, remove room entirely
+      if (room.players.size === 0) {
+        this.rooms.delete(room.code);
+        return { deleted: true, player };
+      }
+
+      // If the leaving player was the host, promote the next available player
+      if (room.hostId === player.id || player.isHost) {
+        const nextPlayer = Array.from(room.players.values())[0];
+        if (nextPlayer) {
+          nextPlayer.isHost = true;
+          room.hostId = nextPlayer.id;
+        }
+      }
+    } else {
+      // Mid-game: mark disconnected
+      player.isConnected = false;
+      player.disconnectTimestamp = Date.now();
+      player.socketId = undefined;
+    }
+
+    return { room, player };
+  }
+
+  public handleSocketDisconnect(socketId: string): { room?: Room; player?: RoomPlayer; deleted?: boolean } {
+    const mapping = this.socketIndex.get(socketId);
+    if (!mapping) return {};
+
+    this.socketIndex.delete(socketId);
+    const room = this.rooms.get(mapping.roomCode);
+    if (!room) return {};
+
+    const player = room.players.get(mapping.playerId);
+    if (!player) return { room };
+
+    player.isConnected = false;
+    player.disconnectTimestamp = Date.now();
+    player.socketId = undefined;
+
+    // In lobby, if host disconnected, promote another connected player if available
+    if (room.status === 'lobby' && (room.hostId === player.id || player.isHost)) {
+      const nextConnected = Array.from(room.players.values()).find((p) => p.isConnected && p.id !== player.id);
+      if (nextConnected) {
+        player.isHost = false;
+        nextConnected.isHost = true;
+        room.hostId = nextConnected.id;
+      }
+    }
+
+    // Clean up completely empty or abandoned rooms
+    const allDisconnected = Array.from(room.players.values()).every((p) => !p.isConnected);
+    if (allDisconnected && room.players.size > 0 && room.status === 'lobby') {
+      this.rooms.delete(room.code);
+      return { deleted: true, player };
+    }
+
+    return { room, player };
+  }
+
+  public startGame(code: string, hostSessionToken: string, seed?: number): { room: Room; gameState: GameState } {
+    const room = this.rooms.get(code.toUpperCase().trim());
+    if (!room) throw new Error('Room not found.');
+
+    const host = room.players.get(room.hostId);
+    if (!host || host.sessionToken !== hostSessionToken) {
+      throw new Error('Only the room host can start the game.');
+    }
+
+    if (room.players.size < EMBEDDED_CONFIG.MIN_PLAYERS_TO_START) {
+      throw new Error(`At least ${EMBEDDED_CONFIG.MIN_PLAYERS_TO_START} players are required to start.`);
+    }
+
+    const playerConfigs = Array.from(room.players.values()).map((p) => ({
+      id: p.id,
+      name: p.name,
+      isHost: p.isHost,
+      avatarSeed: p.avatarSeed,
+    }));
+
+    const gameState = createGame({
+      roomId: room.code,
+      mode: room.settings.gameMode,
+      players: playerConfigs,
+      seed,
+    });
+
+    room.status = 'in_game';
+    room.gameState = gameState;
+
+    return { room, gameState };
+  }
+
+  public getRoom(code: string): Room | undefined {
+    return this.rooms.get(code.toUpperCase().trim());
+  }
+
+  public getPublicRoomState(room: Room): RoomPublicState {
+    const playerList = Array.from(room.players.values()).map((p) => ({
+      id: p.id,
+      name: p.name,
+      isHost: p.isHost,
+      isConnected: p.isConnected,
+      avatarSeed: p.avatarSeed,
+    }));
+
+    return {
+      code: room.code,
+      hostId: room.hostId,
+      gameMode: room.settings.gameMode,
+      maxPlayers: room.settings.maxPlayers,
+      playerCount: room.players.size,
+      hasPassword: !!room.settings.password,
+      status: room.status,
+      players: playerList,
+    };
+  }
+
+  public getAllRoomsCount(): number {
+    return this.rooms.size;
+  }
+
+  public reset(): void {
+    this.rooms.clear();
+    this.socketIndex.clear();
+  }
+}

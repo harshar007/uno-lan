@@ -64,13 +64,7 @@ export function playCard(
   if (isWildCard(card) && !chosenColor) {
     return {
       success: false,
-      state: {
-        ...currentState,
-        pendingAction: {
-          type: 'choose_color',
-          playerId,
-        },
-      },
+      state: currentState,
       error: 'You must choose a color when playing a wild card.',
     };
   }
@@ -127,6 +121,9 @@ export function playCard(
     card.value === topDiscard.value
   ) {
     state.direction = reverseDirection(state.direction);
+    if (numPlayers === 2 && state.rules.reverseInTwoPlayerSkips) {
+      turnStep = 2;
+    }
   }
 
   // Resolve card effects
@@ -151,7 +148,7 @@ export function playCard(
       state = ensureDrawPileCards(state, 2, rng);
       const victimIndex = calculateNextPlayerIndex(state.currentPlayerIndex, numPlayers, state.direction, 1);
       const victimId = state.playerIds[victimIndex];
-      const drawnCards = state.drawPile.splice(0, 2);
+      const drawnCards = [state.drawPile.pop(), state.drawPile.pop()].filter((c): c is Card => !!c);
 
       state.hands[victimId] = [...(state.hands[victimId] || []), ...drawnCards];
       state.players[victimId] = {
@@ -168,7 +165,12 @@ export function playCard(
       state = ensureDrawPileCards(state, 4, rng);
       const victimIndex = calculateNextPlayerIndex(state.currentPlayerIndex, numPlayers, state.direction, 1);
       const victimId = state.playerIds[victimIndex];
-      const drawnCards = state.drawPile.splice(0, 4);
+      const drawnCards = [
+        state.drawPile.pop(),
+        state.drawPile.pop(),
+        state.drawPile.pop(),
+        state.drawPile.pop(),
+      ].filter((c): c is Card => !!c);
 
       state.hands[victimId] = [...(state.hands[victimId] || []), ...drawnCards];
       state.players[victimId] = {
@@ -217,7 +219,21 @@ export function drawCard(currentState: GameState, playerId: string, rng?: Random
 
   let state = ensureDrawPileCards(currentState, 1, rng);
   if (state.drawPile.length === 0) {
-    return { success: false, state, error: 'No cards available to draw.' };
+    // If deck and discard are both exhausted, pass turn without drawing to prevent deadlock
+    const nextPlayerIndex = calculateNextPlayerIndex(
+      state.currentPlayerIndex,
+      state.playerIds.length,
+      state.direction,
+      1
+    );
+    return {
+      success: true,
+      state: {
+        ...state,
+        currentPlayerIndex: nextPlayerIndex,
+        turnNumber: state.turnNumber + 1,
+      },
+    };
   }
 
   state = {
@@ -323,6 +339,10 @@ export function calloutUno(
     return { success: false, state: currentState, error: 'Game is not in progress.' };
   }
 
+  if (callerPlayerId === targetPlayerId) {
+    return { success: false, state: currentState, error: 'Cannot call out yourself.' };
+  }
+
   const targetHand = currentState.hands[targetPlayerId] || [];
   const targetPlayer = currentState.players[targetPlayerId];
 
@@ -344,7 +364,11 @@ export function calloutUno(
     drawPile: [...state.drawPile],
   };
 
-  const penaltyCards = state.drawPile.splice(0, penaltyCount);
+  const penaltyCards: Card[] = [];
+  for (let i = 0; i < penaltyCount; i++) {
+    const card = state.drawPile.pop();
+    if (card) penaltyCards.push(card);
+  }
   state.hands[targetPlayerId] = [...targetHand, ...penaltyCards];
   state.players[targetPlayerId] = {
     ...state.players[targetPlayerId],

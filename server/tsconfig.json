@@ -2,7 +2,12 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@stack-uno/game-engine": ["../packages/game-engine/dist/index.d.ts"]
+    }
   },
   "include": ["src/**/*"]
 }

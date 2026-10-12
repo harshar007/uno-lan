@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackUnoLogo } from '../src/components/StackUnoLogo';
@@ -9,6 +9,8 @@ import { ErrorMessage } from '../src/components/ErrorMessage';
 import { useGameStore } from '../src/store/game-store';
 import { COLORS } from '../src/theme/colors';
 
+const HOTSPOT_DEFAULT_HOST = 'tcp://192.168.43.1:3000';
+
 export default function JoinRoomScreen() {
   const router = useRouter();
   const { joinRoom, errorMessage, clearError, playerName, setPlayerName, serverUrl, setServerUrl } =
@@ -16,7 +18,9 @@ export default function JoinRoomScreen() {
 
   const [roomCode, setRoomCode] = useState('');
   const [name, setName] = useState(playerName || 'Player');
-  const [hostAddress, setHostAddress] = useState(serverUrl);
+  const [hostAddress, setHostAddress] = useState(
+    serverUrl.includes('192.168.43.1') ? HOTSPOT_DEFAULT_HOST : serverUrl
+  );
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +46,11 @@ export default function JoinRoomScreen() {
     }
   };
 
+  const handleQuickHotspotSelect = () => {
+    setHostAddress(HOTSPOT_DEFAULT_HOST);
+    setServerUrl(HOTSPOT_DEFAULT_HOST);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -50,6 +59,21 @@ export default function JoinRoomScreen() {
         <Text style={styles.screenTitle}>JOIN GAME ROOM</Text>
 
         <ErrorMessage message={errorMessage} onDismiss={clearError} />
+
+        {/* 1-Tap Quick Connect to Hotspot Host Phone */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.hotspotQuickCard}
+          onPress={handleQuickHotspotSelect}
+        >
+          <View style={styles.hotspotQuickHeader}>
+            <Text style={styles.hotspotQuickTitle}>⚡ CONNECTING TO FRIEND'S HOTSPOT?</Text>
+            <Text style={styles.hotspotQuickBadge}>1-TAP PRESET</Text>
+          </View>
+          <Text style={styles.hotspotQuickText}>
+            Tap here to auto-set host to <Text style={styles.boldGold}>192.168.43.1:3000</Text> (standard phone hotspot gateway). No manual IP typing required!
+          </Text>
+        </TouchableOpacity>
 
         {/* Room Code */}
         <View style={styles.fieldGroup}>
@@ -80,17 +104,17 @@ export default function JoinRoomScreen() {
 
         {/* Host IP Address */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>HOST LAN ADDRESS (WI-FI IP)</Text>
+          <Text style={styles.label}>HOST ADDRESS (HOTSPOT OR LAN)</Text>
           <TextInput
             style={styles.input}
             value={hostAddress}
             onChangeText={setHostAddress}
-            placeholder="http://192.168.1.x:3000"
+            placeholder="tcp://192.168.43.1:3000"
             placeholderTextColor={COLORS.textMuted}
             autoCapitalize="none"
           />
           <Text style={styles.helperText}>
-            Enter the host computer's IP shown on their server console.
+            Phone Hotspot: tcp://192.168.43.1:3000 • Computer LAN: http://192.168.1.x:3000
           </Text>
         </View>
 
@@ -141,7 +165,45 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  hotspotQuickCard: {
+    backgroundColor: '#1E180A',
+    borderWidth: 1.5,
+    borderColor: COLORS.primaryGold,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+    gap: 6,
+  },
+  hotspotQuickHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  hotspotQuickTitle: {
+    color: COLORS.primaryGold,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  hotspotQuickBadge: {
+    color: '#000000',
+    backgroundColor: COLORS.primaryGold,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  hotspotQuickText: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  boldGold: {
+    color: COLORS.primaryGold,
+    fontWeight: '800',
   },
   fieldGroup: {
     marginVertical: 8,
@@ -178,7 +240,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actions: {
-    marginTop: 24,
+    marginTop: 22,
     gap: 12,
   },
 });

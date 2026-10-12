@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, Platform } from 'react-native';
 import { Card } from '@stack-uno/game-engine';
 import { GameCard } from './GameCard';
 
@@ -18,9 +18,11 @@ export const CardFan: React.FC<Props> = ({
   onSelectCard,
   disabled = false,
 }) => {
-  // Adaptive overlap margin based on hand size
-  const overlapMargin =
-    hand.length > 12 ? -36 : hand.length > 8 ? -28 : hand.length > 5 ? -18 : -10;
+  // Adaptive overlap margin based on hand size and platform
+  const isWeb = Platform.OS === 'web';
+  const overlapMargin = isWeb
+    ? hand.length > 12 ? -24 : hand.length > 8 ? -18 : hand.length > 5 ? -12 : -6
+    : hand.length > 12 ? -36 : hand.length > 8 ? -28 : hand.length > 5 ? -18 : -10;
 
   return (
     <View style={styles.container}>
@@ -80,5 +82,6 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     alignItems: 'center',
+    position: 'relative',
   },
 });

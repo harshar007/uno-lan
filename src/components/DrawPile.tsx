@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     position: 'relative',
-    width: 68,
-    height: 100,
+    width: 72,
+    height: 122,
   },
   canDrawGlow: {
     shadowColor: COLORS.primaryGold,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   drawPrompt: {
     position: 'absolute',
-    bottom: -22,
+    bottom: 0,
     backgroundColor: COLORS.primaryGold,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 3,
+    zIndex: 10,
   },
   drawPromptText: {
     color: '#080808',

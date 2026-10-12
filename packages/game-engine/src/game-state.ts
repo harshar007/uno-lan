@@ -79,14 +79,18 @@ export function createGame(options: CreateGameOptions): GameState {
   let activeColor: CardColor = topDiscard.color ?? 'red';
   let currentPlayerIndex = 0;
   let direction: 1 | -1 = 1;
+  const pendingAction = topDiscard.type === 'wild' ? {
+    type: 'choose_color' as const,
+    playerId: playerIds[0],
+  } : undefined;
 
   // Resolve opening card effects
   if (topDiscard.type === 'draw_two') {
     // First player draws 2 and loses turn
     const penalizedPlayerId = playerIds[0];
-    const drawn = drawPile.splice(0, 2);
+    const drawn = [drawPile.pop(), drawPile.pop()].filter((c): c is Card => !!c);
     hands[penalizedPlayerId].push(...drawn);
-    playerMap[penalizedPlayerId].cardCount += 2;
+    playerMap[penalizedPlayerId].cardCount += drawn.length;
     currentPlayerIndex = 1; // Advance to second player
   } else if (topDiscard.type === 'skip') {
     // First player is skipped
@@ -116,6 +120,7 @@ export function createGame(options: CreateGameOptions): GameState {
     activeColor,
     currentPlayerIndex,
     direction,
+    pendingAction,
     lastPlayedCard: topDiscard,
     turnNumber: 1,
   };

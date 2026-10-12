@@ -17,8 +17,10 @@ const COLOR_HEX: Record<CardColor, string> = {
   yellow: '#FFB800',
 };
 
-export const DiscardPile: React.FC<Props> = ({ topCard, activeColor, discardCount }) => {
-  const activeColorHex = COLOR_HEX[activeColor] || '#E71D36';
+export const DiscardPile: React.FC<Props> = ({ topCard, activeColor = 'red', discardCount = 1 }) => {
+  const safeTopCard = topCard ?? { id: 'empty', type: 'number', value: 0 };
+  const safeColor = activeColor ?? safeTopCard.color ?? 'red';
+  const activeColorHex = COLOR_HEX[safeColor] || '#E71D36';
 
   return (
     <View style={styles.container}>
@@ -32,13 +34,13 @@ export const DiscardPile: React.FC<Props> = ({ topCard, activeColor, discardCoun
 
       {/* Top Discarded Card */}
       <View style={[styles.topCardWrapper, { shadowColor: activeColorHex }]}>
-        <GameCard card={topCard} size="medium" disabled />
+        <GameCard card={safeTopCard} size="medium" disabled />
       </View>
 
       {/* Active Color Casino Marker */}
       <View style={styles.colorBadge}>
         <View style={[styles.colorDot, { backgroundColor: activeColorHex }]} />
-        <Text style={styles.colorText}>{activeColor.toUpperCase()}</Text>
+        <Text style={styles.colorText}>{safeColor.toUpperCase()}</Text>
       </View>
     </View>
   );
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     width: 76,
-    height: 110,
+    height: 122,
   },
   underCard: {
     position: 'absolute',
@@ -87,7 +89,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     position: 'absolute',
-    bottom: -22,
+    bottom: 0,
+    zIndex: 10,
     backgroundColor: '#121212',
     paddingHorizontal: 8,
     paddingVertical: 3,

@@ -144,7 +144,45 @@ export class RoomManager {
     return { room, player: foundPlayer };
   }
 
-  public handleSocketDisconnect(socketId: string): { room?: Room; player?: RoomPlayer } {
+  public leaveRoom(code: string, sessionToken: string): { room?: Room; player?: RoomPlayer; deleted?: boolean } {
+    const room = this.rooms.get(code.toUpperCase().trim());
+    if (!room) return {};
+
+    const player = Array.from(room.players.values()).find((p) => p.sessionToken === sessionToken);
+    if (!player) return { room };
+
+    if (player.socketId) {
+      this.socketIndex.delete(player.socketId);
+    }
+
+    if (room.status === 'lobby') {
+      room.players.delete(player.id);
+
+      // If room is now empty, remove room entirely
+      if (room.players.size === 0) {
+        this.rooms.delete(room.code);
+        return { deleted: true, player };
+      }
+
+      // If the leaving player was the host, promote the next available player
+      if (room.hostId === player.id || player.isHost) {
+        const nextPlayer = Array.from(room.players.values())[0];
+        if (nextPlayer) {
+          nextPlayer.isHost = true;
+          room.hostId = nextPlayer.id;
+        }
+      }
+    } else {
+      // Mid-game: mark disconnected
+      player.isConnected = false;
+      player.disconnectTimestamp = Date.now();
+      player.socketId = undefined;
+    }
+
+    return { room, player };
+  }
+
+  public handleSocketDisconnect(socketId: string): { room?: Room; player?: RoomPlayer; deleted?: boolean } {
     const mapping = this.socketIndex.get(socketId);
     if (!mapping) return {};
 
@@ -158,6 +196,23 @@ export class RoomManager {
     player.isConnected = false;
     player.disconnectTimestamp = Date.now();
     player.socketId = undefined;
+
+    // In lobby, if host disconnected, promote another connected player if available
+    if (room.status === 'lobby' && (room.hostId === player.id || player.isHost)) {
+      const nextConnected = Array.from(room.players.values()).find((p) => p.isConnected && p.id !== player.id);
+      if (nextConnected) {
+        player.isHost = false;
+        nextConnected.isHost = true;
+        room.hostId = nextConnected.id;
+      }
+    }
+
+    // Clean up completely empty or abandoned rooms
+    const allDisconnected = Array.from(room.players.values()).every((p) => !p.isConnected);
+    if (allDisconnected && room.players.size > 0 && room.status === 'lobby') {
+      this.rooms.delete(room.code);
+      return { deleted: true, player };
+    }
 
     return { room, player };
   }

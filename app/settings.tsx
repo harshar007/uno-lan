@@ -105,6 +105,9 @@ export default function SettingsScreen() {
             <Text style={styles.infoLabel}>Your Device LAN IP:</Text>
             <Text style={styles.infoValue}>{deviceIp || 'Detecting...'}</Text>
           </View>
+          <Text style={styles.ipNote}>
+            💡 Note: This is your phone's personal IP. For the Multiplayer Host Address above, enter your host PC's IP printed on the computer console (e.g. http://192.168.1.x:3000).
+          </Text>
         </View>
 
         {/* Preferences (Haptics toggle) */}
@@ -121,9 +124,23 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* How to Connect Devices */}
+        {/* Hotspot Phone-as-Host Guide */}
         <View style={styles.guideCard}>
-          <Text style={styles.guideTitle}>HOW TO PLAY ON LOCAL WI-FI</Text>
+          <Text style={styles.guideTitle}>⚡ 100% OFFLINE HOTSPOT MULTIPLAYER (NO PC)</Text>
+          <Text style={styles.guideStep}>
+            1. <Text style={styles.codeText}>Host Phone:</Text> Turn on Personal Hotspot (cellular data is optional). In Create Room, choose <Text style={styles.codeText}>"PHONE HOTSPOT (NO PC)"</Text>.
+          </Text>
+          <Text style={styles.guideStep}>
+            2. <Text style={styles.codeText}>Friends:</Text> Connect to host phone's Hotspot Wi-Fi. In Join Room, tap <Text style={styles.codeText}>"JOIN HOTSPOT (192.168.43.1)"</Text>.
+          </Text>
+          <Text style={styles.guideStep}>
+            3. Zero internet or laptops required. Runs entirely on the host phone's native TCP engine!
+          </Text>
+        </View>
+
+        {/* How to Connect Devices via Wi-Fi PC */}
+        <View style={styles.guideCard}>
+          <Text style={styles.guideTitle}>HOW TO PLAY ON HOME WI-FI (WITH PC)</Text>
           <Text style={styles.guideStep}>
             1. Connect host computer and mobile phones to the same Wi-Fi router.
           </Text>
@@ -223,6 +240,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 13,
     fontFamily: 'monospace',
+  },
+  ipNote: {
+    color: colors.goldSoft,
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 4,
+    opacity: 0.9,
   },
   guideCard: {
     backgroundColor: '#141414',

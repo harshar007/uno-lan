@@ -35,7 +35,7 @@ export const DirectionIndicator: React.FC<Props> = ({ direction, mode }) => {
     <View style={styles.container}>
       <View style={styles.badge}>
         <Animated.View style={arrowAnimatedStyle}>
-          <Text style={styles.arrow}>{isClockwise ? '↻' : '↺'}</Text>
+          <Text style={styles.arrow}>↻</Text>
         </Animated.View>
         <Text style={styles.label}>
           {isClockwise ? 'CLOCKWISE' : 'COUNTER-CLOCKWISE'}

@@ -197,4 +197,37 @@ describe('STACK UNO Multiplayer Server Integration', () => {
     host.disconnect();
     newGuestSocket.disconnect();
   });
+
+  it('handles room:leave and promotes new host if host leaves lobby', async () => {
+    const host = await createClient();
+    const guest = await createClient();
+
+    const createRes = await new Promise<any>((resolve) => {
+      host.emit('room:create', { playerName: 'HostUser' }, resolve);
+    });
+    const code = createRes.room.code;
+
+    const joinRes = await new Promise<any>((resolve) => {
+      guest.emit('room:join', { roomCode: code, playerName: 'GuestUser' }, resolve);
+    });
+
+    // Host leaves lobby
+    const leaveRes = await new Promise<any>((resolve) => {
+      host.emit('room:leave', { roomCode: code, sessionToken: createRes.sessionToken }, resolve);
+    });
+
+    expect(leaveRes.success).toBe(true);
+
+    // Guest should now be promoted to host
+    const guestReconnect = await new Promise<any>((resolve) => {
+      guest.emit('player:reconnect', { roomCode: code, sessionToken: joinRes.sessionToken }, resolve);
+    });
+
+    expect(guestReconnect.success).toBe(true);
+    expect(guestReconnect.room.playerCount).toBe(1);
+    expect(guestReconnect.room.hostId).toBe(joinRes.playerId);
+
+    host.disconnect();
+    guest.disconnect();
+  });
 });

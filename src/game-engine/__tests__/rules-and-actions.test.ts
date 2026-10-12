@@ -127,5 +127,39 @@ describe('Game Rules and Actions Tests', () => {
     expect(callout.success).toBe(true);
     // p1 should receive penalty cards (default 2)
     expect(callout.state.hands[p1].length).toBe(3);
+
+    // Caller cannot call out themselves
+    const selfCallout = calloutUno(game, p2, p2);
+    expect(selfCallout.success).toBe(false);
+    expect(selfCallout.error).toContain('yourself');
+  });
+
+  it('rejects wild card without chosen color without corrupting hand or discard pile', () => {
+    const game = createGame({ roomId: 'ROOM1', players, seed: 42 });
+    const p0 = game.playerIds[0];
+    game.currentPlayerIndex = 0;
+
+    const wildCard: Card = { id: 'wild_no_color', type: 'wild' };
+    game.hands[p0] = [wildCard];
+    const initialDiscardCount = game.discardPile.length;
+
+    const result = playCard(game, p0, wildCard.id);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('choose a color');
+    // Hand and discard pile should remain untouched
+    expect(result.state.hands[p0]).toHaveLength(1);
+    expect(result.state.discardPile).toHaveLength(initialDiscardCount);
+  });
+
+  it('advances turn cleanly without freezing when draw pile and discard pile are empty', () => {
+    const game = createGame({ roomId: 'ROOM1', players, seed: 42 });
+    const p0 = game.playerIds[0];
+    game.currentPlayerIndex = 0;
+    game.drawPile = [];
+    game.discardPile = [game.discardPile[0]]; // only 1 top card
+
+    const result = drawCard(game, p0);
+    expect(result.success).toBe(true);
+    expect(result.state.currentPlayerIndex).toBe(1); // turn successfully advanced
   });
 });

@@ -16,7 +16,7 @@ interface Props {
   onClose?: () => void;
 }
 
-export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor }) => {
+export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor, onClose }) => {
   const scale = useSharedValue(0.85);
   const opacity = useSharedValue(0);
 
@@ -43,36 +43,50 @@ export const ColorPicker: React.FC<Props> = ({ visible, onSelectColor }) => {
   ];
 
   return (
-    <Modal visible={visible} transparent animationType="none">
-      <View style={styles.overlay}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <Pressable style={styles.overlay} onPress={onClose}>
         <Animated.View style={[styles.dialog, dialogAnimatedStyle]}>
-          <Text style={styles.title}>CHOOSE NEXT COLOR</Text>
-          <Text style={styles.subtitle}>Select the color to continue gameplay</Text>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.title}>CHOOSE NEXT COLOR</Text>
+            <Text style={styles.subtitle}>Select the color to continue gameplay</Text>
 
-          <View style={styles.grid}>
-            {colorOptions.map((item) => (
-              <Pressable
-                key={item.color}
-                onPress={() => onSelectColor(item.color)}
-                style={({ pressed }) => [
-                  styles.colorButton,
-                  { backgroundColor: item.hex },
-                  pressed && styles.colorButtonPressed,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    item.color === 'yellow' && styles.darkText,
+            <View style={styles.grid}>
+              {colorOptions.map((item) => (
+                <Pressable
+                  key={item.color}
+                  onPress={() => onSelectColor(item.color)}
+                  style={({ pressed }) => [
+                    styles.colorButton,
+                    { backgroundColor: item.hex },
+                    pressed && styles.colorButtonPressed,
                   ]}
                 >
-                  {item.label}
-                </Text>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      item.color === 'yellow' && styles.darkText,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {onClose && (
+              <Pressable
+                onPress={onClose}
+                style={({ pressed }) => [
+                  styles.cancelButton,
+                  pressed && styles.cancelButtonPressed,
+                ]}
+              >
+                <Text style={styles.cancelButtonText}>CANCEL</Text>
               </Pressable>
-            ))}
-          </View>
+            )}
+          </Pressable>
         </Animated.View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };
@@ -144,5 +158,24 @@ const styles = StyleSheet.create({
   },
   darkText: {
     color: '#111111',
+  },
+  cancelButton: {
+    marginTop: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    borderRadius: 10,
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: '#3D3D3D',
+    alignSelf: 'center',
+  },
+  cancelButtonPressed: {
+    opacity: 0.7,
+  },
+  cancelButtonText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.5,
   },
 });

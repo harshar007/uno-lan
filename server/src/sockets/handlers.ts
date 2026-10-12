@@ -69,6 +69,11 @@ const CalloutUnoSchema = z.object({
   targetPlayerId: z.string(),
 });
 
+const LeaveRoomSchema = z.object({
+  roomCode: z.string(),
+  sessionToken: z.string(),
+});
+
 export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
   function broadcastRoomState(room: Room) {
     const publicState = roomManager.getPublicRoomState(room);
@@ -361,13 +366,51 @@ export function registerSocketHandlers(io: Server, roomManager: RoomManager) {
       }
     });
 
+    // 10. Leave Room
+    socket.on('room:leave', (payload: unknown, ack?: (res: any) => void) => {
+      try {
+        const data = LeaveRoomSchema.parse(payload);
+        const { room, deleted } = roomManager.leaveRoom(data.roomCode, data.sessionToken);
+        socket.leave(data.roomCode.toUpperCase().trim());
+        ack?.({ success: true });
+        if (room && !deleted) {
+          broadcastRoomState(room);
+        }
+      } catch (err: any) {
+        ack?.({ success: false, error: err.message || 'Failed to leave room' });
+      }
+    });
+
     // Disconnect handling
     socket.on('disconnect', () => {
-      const { room } = roomManager.handleSocketDisconnect(socket.id);
+      const { room, player } = roomManager.handleSocketDisconnect(socket.id);
       if (room) {
         broadcastRoomState(room);
         if (room.gameState) {
           broadcastGameState(room);
+
+          // If the player who disconnected has the active turn, auto-draw after 10s grace
+          if (room.gameState.status === 'in_progress' && player) {
+            const currentTurnPlayerId = room.gameState.playerIds[room.gameState.currentPlayerIndex];
+            if (currentTurnPlayerId === player.id) {
+              setTimeout(() => {
+                const refreshedRoom = roomManager.getRoom(room.code);
+                if (refreshedRoom && refreshedRoom.gameState && refreshedRoom.gameState.status === 'in_progress') {
+                  const checkPlayer = refreshedRoom.players.get(player.id);
+                  if (checkPlayer && !checkPlayer.isConnected) {
+                    const currentId = refreshedRoom.gameState.playerIds[refreshedRoom.gameState.currentPlayerIndex];
+                    if (currentId === player.id) {
+                      const drawRes = drawCard(refreshedRoom.gameState, player.id);
+                      if (drawRes.success) {
+                        refreshedRoom.gameState = drawRes.state;
+                        broadcastGameState(refreshedRoom);
+                      }
+                    }
+                  }
+                }
+              }, 10000);
+            }
+          }
         }
       }
     });

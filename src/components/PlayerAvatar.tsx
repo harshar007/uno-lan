@@ -17,12 +17,17 @@ export const PlayerAvatar: React.FC<Props> = ({
   hasDeclaredUno = false,
   size = 44,
 }) => {
-  const initials = name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
+  const cleanName = (name || 'P').trim();
+  const words = cleanName.split(/\s+/).filter(Boolean);
+  let initials = '?';
+  if (words.length >= 2) {
+    const firstChar = Array.from(words[0])[0] || '';
+    const secondChar = Array.from(words[1])[0] || '';
+    initials = (firstChar + secondChar).toUpperCase();
+  } else if (words.length === 1) {
+    const chars = Array.from(words[0]);
+    initials = chars.slice(0, 2).join('').toUpperCase();
+  }
 
   return (
     <View style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}>
